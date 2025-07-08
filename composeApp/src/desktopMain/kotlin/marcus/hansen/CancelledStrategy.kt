@@ -2,6 +2,8 @@ package marcus.hansen
 
 class CancelledStrategy : UpdateStrategy {
     override fun update(shipment: Shipment, update: ShippingUpdate) {
-        TODO("Not yet implemented")
+        shipment.status = "Canceled"
+        shipment.addUpdate(update)
+        shipment.notifyObservers()
     }
 }

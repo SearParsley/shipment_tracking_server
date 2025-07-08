@@ -6,7 +6,7 @@ interface UpdateStrategy {
      * After applying the update, the strategy should call shipment.notifyObservers().
      *
      * @param shipment The Shipment object to be updated.
-     * @param updateData The data containing the details of the update.
+     * @param update The data containing the details of the update.
      */
     fun update(shipment: Shipment, update: ShippingUpdate)
 }

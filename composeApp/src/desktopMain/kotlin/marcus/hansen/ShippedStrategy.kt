@@ -4,7 +4,11 @@ class ShippedStrategy : UpdateStrategy {
     override fun update(shipment: Shipment, update: ShippingUpdate) {
         shipment.status = "Shipped"
         if (update.otherInfo.isNotEmpty()) {
-            shipment.expectedDeliveryDateTimestamp = update.otherInfo[0].toLong()
+            try {
+                shipment.expectedDeliveryDateTimestamp = update.otherInfo[0].toLong() // Using internal set
+            } catch (e: NumberFormatException) {
+                System.err.println("ShippedStrategy: Invalid timestamp format in otherInfo for shipment ${shipment.id}: ${update.otherInfo[0]}")
+            }
         }
         shipment.addUpdate(update)
         shipment.notifyObservers()
