@@ -9,10 +9,11 @@ plugins {
 
 kotlin {
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting
-        
+        val desktopTest by getting // Ensure this line is present if you use desktopTest
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -20,15 +21,22 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtimeCompose)
+            // ADDED: Core coroutines library for common module
+            implementation(libs.kotlinx.coroutinesCore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            // Also ensure you have libs.junit.jupiter.api here if commonTest uses JUnit 5 assertions
+            // For example: implementation(libs.junit.jupiter.api)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+        }
+        desktopTest.dependencies {
+            // These are for the test runner and coroutine testing
+            runtimeOnly(libs.junit.jupiter.engine)
+            implementation(libs.kotlinx.coroutinesTest)
         }
     }
 }
@@ -44,4 +52,9 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+// ADD THIS BLOCK AT THE VERY END OF THE FILE, OUTSIDE OF OTHER BLOCKS
+tasks.withType<Test> {
+    useJUnitPlatform() // This configures the test task to use JUnit 5 as the underlying runner
 }
