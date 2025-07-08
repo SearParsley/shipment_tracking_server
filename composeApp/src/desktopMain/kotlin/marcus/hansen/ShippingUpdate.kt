@@ -15,15 +15,33 @@ data class ShippingUpdate(
          * @return A new ShippingUpdate object.
          */
         fun fromString(line: String): ShippingUpdate {
-            val parts = line.split(",")
+            // Split the line by the first 3 commas to separate fixed fields from potential 'otherInfo'
+            // Using limit = 4 means it will split into at most 4 parts:
+            // [updateType, shipmentId, timestamp, rest_of_line_as_one_string]
+            val parts = line.split(",", limit = 4)
+
             if (parts.size < 3) {
-                throw IllegalArgumentException("Invalid update line format: $line")
+                throw IllegalArgumentException("Invalid update line format (missing type, ID, or timestamp): $line")
             }
+
             val updateType = parts[0].trim()
             val shipmentId = parts[1].trim()
             val timestamp = parts[2].trim().toLong()
-            val otherInfo = if (parts.size > 3) parts.subList(3, parts.size).map { it.trim() } else emptyList()
-            return ShippingUpdate(updateType, shipmentId, timestamp, otherInfo)
+
+            val otherInfoList: List<String>
+
+            // Check if there's a 4th part which would be the 'otherInfo'
+            if (parts.size == 4) {
+                val rawOtherInfo = parts[3].trim()
+                otherInfoList = when (updateType) {
+                    "noteadded" -> listOf(rawOtherInfo) // Treat entire string as one note
+                    else -> listOf(rawOtherInfo)
+                }
+            } else {
+                otherInfoList = emptyList()
+            }
+
+            return ShippingUpdate(updateType, shipmentId, timestamp, otherInfoList)
         }
     }
 }
