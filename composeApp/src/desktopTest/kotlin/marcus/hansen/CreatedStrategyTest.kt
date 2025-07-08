@@ -9,16 +9,6 @@ import kotlin.test.assertNull
 
 class CreatedStrategyTest {
 
-    // Mock observer to verify notification
-    private class MockShipmentObserver : ShipmentObserver {
-        var updateCalled = false
-        var receivedShipment: Shipment? = null
-        override fun update(shipment: Shipment) {
-            updateCalled = true
-            receivedShipment = shipment
-        }
-    }
-
     @Test
     fun `update should set status to Created and add update to history`() {
         val shipmentId = "SHIP_NEW_001"
