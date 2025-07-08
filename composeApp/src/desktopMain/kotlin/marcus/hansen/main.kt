@@ -6,7 +6,7 @@ import androidx.compose.ui.window.application
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "shipment_tracking_simulator",
+        title = "Shipment Tracking Simulator",
     ) {
         App()
     }
