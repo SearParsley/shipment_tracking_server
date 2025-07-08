@@ -12,7 +12,7 @@ kotlin {
 
     sourceSets {
         val desktopMain by getting
-        val desktopTest by getting // Ensure this line is present if you use desktopTest
+        val desktopTest by getting
 
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -21,20 +21,16 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            // ADDED: Core coroutines library for common module
             implementation(libs.kotlinx.coroutinesCore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
-            // Also ensure you have libs.junit.jupiter.api here if commonTest uses JUnit 5 assertions
-            // For example: implementation(libs.junit.jupiter.api)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
         }
         desktopTest.dependencies {
-            // These are for the test runner and coroutine testing
             runtimeOnly(libs.junit.jupiter.engine)
             implementation(libs.kotlinx.coroutinesTest)
         }
@@ -54,7 +50,6 @@ compose.desktop {
     }
 }
 
-// ADD THIS BLOCK AT THE VERY END OF THE FILE, OUTSIDE OF OTHER BLOCKS
 tasks.withType<Test> {
-    useJUnitPlatform() // This configures the test task to use JUnit 5 as the underlying runner
+    useJUnitPlatform()
 }
