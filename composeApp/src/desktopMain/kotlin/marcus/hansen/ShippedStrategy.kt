@@ -2,6 +2,11 @@ package marcus.hansen
 
 class ShippedStrategy : UpdateStrategy {
     override fun update(shipment: Shipment, update: ShippingUpdate) {
-        TODO("Not yet implemented")
+        shipment.status = "Shipped"
+        if (update.otherInfo.isNotEmpty()) {
+            shipment.expectedDeliveryDateTimestamp = update.otherInfo[0].toLong()
+        }
+        shipment.addUpdate(update)
+        shipment.notifyObservers()
     }
 }
