@@ -53,12 +53,12 @@ class TrackingSimulator {
             }
         }
 
-        for (updateData in updates) {
-            val shipmentId = updateData.shipmentId
+        for (update in updates) {
+            val shipmentId = update.shipmentId
             var shipment = shipments[shipmentId]
 
             // Handle "created" updates: create shipment if it doesn't exist
-            if (updateData.updateType == "created") {
+            if (update.updateType == "created") {
                 if (shipment == null) {
                     shipment = Shipment(shipmentId)
                     addShipment(shipment)
@@ -68,17 +68,17 @@ class TrackingSimulator {
                 }
             } else if (shipment == null) {
                 // For non-creation updates, if shipment doesn't exist, log and skip
-                println("TrackingSimulator: Error: Update for non-existent shipment ID: $shipmentId (Type: ${updateData.updateType}). Skipping.")
+                println("TrackingSimulator: Error: Update for non-existent shipment ID: $shipmentId (Type: ${update.updateType}). Skipping.")
                 delay(1000L) // Still apply delay even if skipping, to simulate real-time processing
                 continue
             }
 
-            val strategy = updateStrategies[updateData.updateType]
+            val strategy = updateStrategies[update.updateType]
             if (strategy != null && shipment != null) {
-                strategy.update(shipment, updateData)
-                println("TrackingSimulator: Processed '${updateData.updateType}' update for $shipmentId.")
+                strategy.update(shipment, update)
+                println("TrackingSimulator: Processed '${update.updateType}' update for $shipmentId.")
             } else {
-                println("TrackingSimulator: Strategy not found for type '${updateData.updateType}' or shipment is null.")
+                println("TrackingSimulator: Strategy not found for type '${update.updateType}' or shipment is null.")
             }
             delay(1000L) // Apply 1-second delay as per requirement
         }

@@ -23,7 +23,7 @@ class CreatedStrategyTest {
     fun `update should set status to Created and add update to history`() {
         val shipmentId = "SHIP_NEW_001"
         val shipment = Shipment(shipmentId) // Create a new Shipment instance
-        val updateData = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
+        val update = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
 
         val strategy = CreatedStrategy()
 
@@ -31,27 +31,27 @@ class CreatedStrategyTest {
         assertEquals("Unknown", shipment.status)
         assertTrue(shipment.getImmutableUpdateHistory().isEmpty())
 
-        strategy.update(shipment, updateData)
+        strategy.update(shipment, update)
 
         // Verify status is "Created"
         assertEquals("Created", shipment.status)
 
         // Verify update is added to history
         assertEquals(1, shipment.getImmutableUpdateHistory().size)
-        assertEquals(updateData, shipment.getImmutableUpdateHistory()[0])
+        assertEquals(update, shipment.getImmutableUpdateHistory()[0])
     }
 
     @Test
     fun `update should notify observers after setting status and adding update`() {
         val shipmentId = "SHIP_NEW_002"
         val shipment = Shipment(shipmentId)
-        val updateData = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
+        val update = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
         val mockObserver = MockShipmentObserver()
 
         shipment.addObserver(mockObserver) // Register the mock observer
 
         val strategy = CreatedStrategy()
-        strategy.update(shipment, updateData)
+        strategy.update(shipment, update)
 
         // Verify that the observer was notified
         assertTrue(mockObserver.updateCalled)
@@ -66,12 +66,12 @@ class CreatedStrategyTest {
         val shipmentId = "SHIP_NEW_003"
         val shipment = Shipment(shipmentId)
         // Ensure the fromString method correctly produces empty otherInfo for 'created'
-        val updateData = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
+        val update = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
 
         val strategy = CreatedStrategy()
-        strategy.update(shipment, updateData)
+        strategy.update(shipment, update)
 
-        assertTrue(updateData.otherInfo.isEmpty()) // Confirm the update data itself has no otherInfo
+        assertTrue(update.otherInfo.isEmpty()) // Confirm the update data itself has no otherInfo
         // No other properties should be affected by otherInfo for a 'created' update
         assertNull(shipment.currentLocation)
         assertNull(shipment.expectedDeliveryDateTimestamp)
