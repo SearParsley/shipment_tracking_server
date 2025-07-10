@@ -6,6 +6,7 @@ import kotlin.test.assertTrue
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertNotNull
+import kotlin.test.assertContentEquals
 
 class TrackerTest {
 
@@ -18,99 +19,105 @@ class TrackerTest {
         shipment.expectedDeliveryDateTimestamp = 123456789L
         shipment.addNote("Initial note.")
         val createdUpdate = ShippingUpdate.fromString("created,$shipmentId,1000")
-        shipment.addUpdate(createdUpdate) // Explicitly add the created update to history
+        shipment.addUpdate(createdUpdate)
 
-        val tracker = Tracker(shipmentId) // Create Tracker instance
-        shipment.addObserver(tracker) // Register tracker as observer
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
 
-        // Manually call notifyObservers to simulate a state change and notification
         shipment.notifyObservers()
 
-        // Assert that the tracker's internal state reflects the shipment's state
-        assertEquals("Created", tracker.lastReceivedStatus)
-        assertEquals("Warehouse A", tracker.lastReceivedLocation)
-        assertEquals(123456789L, tracker.lastReceivedExpectedDelivery)
-        assertEquals(1, tracker.lastReceivedNotes.size)
-        assertEquals("Initial note.", tracker.lastReceivedNotes[0])
-        assertEquals(1, tracker.lastReceivedUpdateHistory.size)
-        assertEquals(createdUpdate, tracker.lastReceivedUpdateHistory[0])
+        // Assert TrackerViewHelper's state
+        assertEquals("Created", viewModel.shipmentStatus)
+        assertEquals("Warehouse A", viewModel.currentLocation)
+        assertEquals("123456789", viewModel.expectedShipmentDeliveryDate) // String format
+        assertContentEquals(arrayOf("Initial note."), viewModel.shipmentNotes)
+        assertEquals(1, viewModel.shipmentUpdateHistory.size)
+        assertTrue(viewModel.shipmentUpdateHistory[0].contains("Created"), "Formatted history should contain 'Created'")
     }
 
     @Test
-    fun `Tracker should update its internal state when shipment changes`() {
+    fun `Tracker should update its TrackerViewHelper state when shipment changes`() {
         val shipmentId = "SHIP_TRACK_002"
         val shipment = Shipment(shipmentId)
         val initialCreatedUpdate = ShippingUpdate.fromString("created,$shipmentId,1000")
-        shipment.status = "Created" // Initial status set
+        shipment.status = "Created"
         shipment.addUpdate(initialCreatedUpdate)
 
-        val tracker = Tracker(shipmentId)
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
         shipment.addObserver(tracker)
 
-        // Initial notification to give tracker its first state (e.g., "Created" and initial history)
-        shipment.notifyObservers()
-        assertEquals("Created", tracker.lastReceivedStatus) // Verify initial state is received
-        assertEquals(1, tracker.lastReceivedUpdateHistory.size, "Initial history should have 1 update after first notify")
+        shipment.notifyObservers() // Initial notification
+        assertEquals("Created", viewModel.shipmentStatus)
+        assertEquals(1, viewModel.shipmentUpdateHistory.size)
 
 
         // Simulate a status and location change
         shipment.status = "Shipped"
         shipment.currentLocation = "Shipping Hub"
         val shippedUpdate = ShippingUpdate.fromString("shipped,$shipmentId,2000,3000")
-        shipment.addUpdate(shippedUpdate) // This adds the second update to history
+        shipment.addUpdate(shippedUpdate)
 
         shipment.notifyObservers() // Notify again after changes
 
-        // Assert that the tracker's internal state is now updated
-        assertEquals("Shipped", tracker.lastReceivedStatus)
-        assertEquals("Shipping Hub", tracker.lastReceivedLocation)
-        // Now expecting 2 updates in history: initial "created" and the "shipped" one
-        assertEquals(2, tracker.lastReceivedUpdateHistory.size, "Shipment history should contain two updates")
-        // Verify the second update (the new one)
-        assertEquals(shippedUpdate, tracker.lastReceivedUpdateHistory[1], "The second update in history should be the shipped one")
+        // Assert that the TrackerViewHelper's state is now updated
+        assertEquals("Shipped", viewModel.shipmentStatus)
+        assertEquals("Shipping Hub", viewModel.currentLocation)
+        assertEquals(2, viewModel.shipmentUpdateHistory.size)
+        assertTrue(viewModel.shipmentUpdateHistory[1].contains("Shipped"), "Formatted history should contain 'Shipped'")
     }
 
     @Test
-    fun `Tracker should not update for unrelated shipments`() {
+    fun `Tracker should not update its TrackerViewHelper for unrelated shipments`() {
         val shipmentId1 = "SHIP_TRACK_003"
         val shipmentId2 = "SHIP_TRACK_004"
         val shipment1 = Shipment(shipmentId1)
         val initialCreatedUpdate1 = ShippingUpdate.fromString("created,$shipmentId1,1000")
-        shipment1.status = "Created" // Set initial status for shipment1
+        shipment1.status = "Created"
         shipment1.addUpdate(initialCreatedUpdate1)
+
         val shipment2 = Shipment(shipmentId2)
         val initialCreatedUpdate2 = ShippingUpdate.fromString("created,$shipmentId2,1000")
-        shipment2.status = "Created" // Set initial status for shipment2
-        shipment2.addUpdate(initialCreatedUpdate2) // Add initial update to history for shipment2
+        shipment2.status = "Created"
+        shipment2.addUpdate(initialCreatedUpdate2)
 
-        val trackerForShipment1 = Tracker(shipmentId1) // Tracker for SHIP_TRACK_003
-        shipment1.addObserver(trackerForShipment1) // ONLY adds to shipment1's observers
+        val viewModel1 = TrackerViewHelper(shipmentId1) // ViewModel for shipment1
+        val trackerForShipment1 = Tracker(shipmentId1, viewModel1) // Tracker for SHIP_TRACK_003
+        shipment1.addObserver(trackerForShipment1)
 
-        // Call notifyObservers() for shipment1 to give trackerForShipment1 its initial state and history
-        shipment1.notifyObservers()
-        assertEquals("Created", trackerForShipment1.lastReceivedStatus, "Tracker for shipment1 should receive initial 'Created' status")
-        assertEquals(1, trackerForShipment1.lastReceivedUpdateHistory.size, "Tracker for shipment1's history should have its initial update")
+        shipment1.notifyObservers() // Give trackerForShipment1 its initial state
+        assertEquals("Created", viewModel1.shipmentStatus)
+        assertEquals(1, viewModel1.shipmentUpdateHistory.size)
 
+
+        // Capture initial state of viewModel1 before unrelated update
+        val initialStatus1 = viewModel1.shipmentStatus
+        val initialLocation1 = viewModel1.currentLocation
+        val initialNotes1 = viewModel1.shipmentNotes.toList()
+        val initialHistory1 = viewModel1.shipmentUpdateHistory.toList()
 
         // Simulate update for shipment2 (unrelated to trackerForShipment1)
-        shipment2.status = "Shipped" // Changes shipment2's status
+        shipment2.status = "Shipped"
         val shippedUpdate2 = ShippingUpdate.fromString("shipped,$shipmentId2,2000,3000")
         shipment2.addUpdate(shippedUpdate2)
         shipment2.notifyObservers() // This notification is for shipment2's observers ONLY
 
-        // Assert that trackerForShipment1's state remains unchanged from its initial "Created" status
-        assertEquals("Created", trackerForShipment1.lastReceivedStatus, "Tracker for shipment1 should NOT change status due to unrelated update")
-        assertNull(trackerForShipment1.lastReceivedLocation, "Tracker for shipment1's location should remain null")
-        assertTrue(trackerForShipment1.lastReceivedNotes.isEmpty(), "Tracker for shipment1's notes should remain empty")
-        assertEquals(1, trackerForShipment1.lastReceivedUpdateHistory.size, "Tracker for shipment1's history should only have its initial update")
+        // Assert that trackerForShipment1's ViewModel state remains unchanged
+        assertEquals(initialStatus1, viewModel1.shipmentStatus, "Tracker for shipment1's status should NOT change due to unrelated update")
+        assertEquals(initialLocation1, viewModel1.currentLocation, "Tracker for shipment1's location should NOT change due to unrelated update")
+        assertContentEquals(initialNotes1.toTypedArray(), viewModel1.shipmentNotes, "Tracker for shipment1's notes should NOT change due to unrelated update")
+        assertContentEquals(initialHistory1.toTypedArray(), viewModel1.shipmentUpdateHistory, "Tracker for shipment1's history should NOT change due to unrelated update")
 
-        // Now, update shipment1 and verify trackerForShipment1 updates
+
+        // Now, update shipment1 and verify trackerForShipment1 updates its ViewModel
         shipment1.status = "Delivered"
         val deliveredUpdate1 = ShippingUpdate.fromString("delivered,$shipmentId1,4000")
         shipment1.addUpdate(deliveredUpdate1)
         shipment1.notifyObservers()
-        assertEquals("Delivered", trackerForShipment1.lastReceivedStatus, "Tracker for shipment1 should update when its own shipment notifies")
-        assertEquals(2, trackerForShipment1.lastReceivedUpdateHistory.size, "Tracker for shipment1's history should now have two updates")
+        assertEquals("Delivered", viewModel1.shipmentStatus, "Tracker for shipment1 should update when its own shipment notifies")
+        assertEquals(2, viewModel1.shipmentUpdateHistory.size)
+        assertTrue(viewModel1.shipmentUpdateHistory[1].contains("Delivered"), "Formatted history should contain 'Delivered'")
     }
 
     @Test
@@ -120,14 +127,15 @@ class TrackerTest {
         val initialCreatedUpdate = ShippingUpdate.fromString("created,$shipmentId,1000")
         shipment.status = "Created"
         shipment.addUpdate(initialCreatedUpdate)
-        
-        val tracker = Tracker(shipmentId)
+
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
         shipment.addObserver(tracker)
 
         // Initial update
         shipment.notifyObservers()
-        assertEquals("Created", tracker.lastReceivedStatus)
-        assertEquals(1, tracker.lastReceivedUpdateHistory.size, "History should have 1 update initially")
+        assertEquals("Created", viewModel.shipmentStatus)
+        assertEquals(1, viewModel.shipmentUpdateHistory.size)
 
 
         // Remove observer
@@ -136,12 +144,12 @@ class TrackerTest {
         // Simulate another change
         shipment.status = "Lost"
         val lostUpdate = ShippingUpdate.fromString("lost,$shipmentId,2000")
-        shipment.addUpdate(lostUpdate) // Add another update to shipment's history
+        shipment.addUpdate(lostUpdate)
         shipment.notifyObservers() // This notification should NOT reach the tracker
 
-        // Assert that the tracker's state is still from the previous update
-        assertEquals("Created", tracker.lastReceivedStatus) // Should NOT be "Lost"
-        assertEquals(1, tracker.lastReceivedUpdateHistory.size, "History should NOT gain new updates after observer removal")
+        // Assert that the TrackerViewHelper's state is still from the previous update
+        assertEquals("Created", viewModel.shipmentStatus) // Should NOT be "Lost"
+        assertEquals(1, viewModel.shipmentUpdateHistory.size, "History should NOT gain new updates after observer removal")
     }
 
     @Test
@@ -150,18 +158,19 @@ class TrackerTest {
         val shipment = Shipment(shipmentId) // Location, ExpectedDelivery are null by default
         shipment.status = "Created"
         val createdUpdate = ShippingUpdate.fromString("created,$shipmentId,1000")
-        shipment.addUpdate(createdUpdate) // Add initial update to history
+        shipment.addUpdate(createdUpdate)
 
-        val tracker = Tracker(shipmentId)
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
         shipment.addObserver(tracker)
 
         shipment.notifyObservers()
 
-        assertEquals("Created", tracker.lastReceivedStatus)
-        assertNull(tracker.lastReceivedLocation)
-        assertNull(tracker.lastReceivedExpectedDelivery)
-        assertTrue(tracker.lastReceivedNotes.isEmpty())
-        assertEquals(1, tracker.lastReceivedUpdateHistory.size)
-        assertEquals(createdUpdate, tracker.lastReceivedUpdateHistory[0])
+        assertEquals("Created", viewModel.shipmentStatus)
+        assertNull(viewModel.currentLocation)
+        assertNull(viewModel.expectedShipmentDeliveryDate)
+        assertTrue(viewModel.shipmentNotes.isEmpty())
+        assertEquals(1, viewModel.shipmentUpdateHistory.size)
+        assertTrue(viewModel.shipmentUpdateHistory[0].contains("Created"))
     }
 }
