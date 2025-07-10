@@ -1,3 +1,4 @@
+// TrackingSimulatorIntegrationTest.kt
 package marcus.hansen
 
 import kotlin.test.Test
@@ -5,10 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.test.assertNull
-import kotlinx.coroutines.test.runTest // Import runTest for controlling virtual time
+import kotlinx.coroutines.test.runTest
 import java.io.File
 
-class TrackingSimulatorIntegrationTest {
+class TrackingSimulatorTest {
 
     private val TEST_FILE_PATH = "test_comprehensive_updates.txt"
 
@@ -113,6 +114,56 @@ class TrackingSimulatorIntegrationTest {
 
         assertNull(simulator.findShipment("NON_EXISTENT_SHIP"), "Non-existent shipment should not be created by non-create update")
         assertNotNull(simulator.findShipment("EXISTING_SHIP"), "Existing shipment should be created")
+
+        deleteTestFile()
+    }
+
+    @Test
+    fun `observers should be notified of shipment state changes during simulation`() = runTest {
+        val baseTimestamp = 1700000000000L
+
+        // Test data for two shipments, ensuring multiple updates
+        val testContent = listOf(
+            // Shipment A: created -> shipped -> delivered
+            "created,SHIP_OBSERVER_A,${baseTimestamp}",
+            "shipped,SHIP_OBSERVER_A,${baseTimestamp + 1000},${baseTimestamp + 5000}",
+            "delivered,SHIP_OBSERVER_A,${baseTimestamp + 2000}",
+
+            // Shipment B: created -> delayed -> lost
+            "created,SHIP_OBSERVER_B,${baseTimestamp + 10000}",
+            "delayed,SHIP_OBSERVER_B,${baseTimestamp + 11000},${baseTimestamp + 18000}",
+            "lost,SHIP_OBSERVER_B,${baseTimestamp + 12000}"
+        )
+        createTestFile(testContent)
+
+        val simulator = TrackingSimulator()
+
+        // Create observers for the specific shipments we want to track
+        val observerA = MockComplexShipmentObserver()
+        val observerB = MockComplexShipmentObserver()
+
+        // Run the simulation
+        simulator.runSimulation(TEST_FILE_PATH)
+
+        // --- Simulating Observer attachment & final state check ---
+        val shipmentA = simulator.findShipment("SHIP_OBSERVER_A")
+        assertNotNull(shipmentA, "Shipment A should have been created by the simulator.")
+        val tempObserverA = MockComplexShipmentObserver()
+        shipmentA.addObserver(tempObserverA)
+        shipmentA.notifyObservers() // Force a final notification to verify the end state
+        assertTrue(tempObserverA.updateCalledCount > 0, "Observer A should have been notified at least once (for final state).")
+        assertEquals("Delivered", tempObserverA.lastReceivedShipment?.status, "Observer A should perceive Shipment A as Delivered.")
+        assertEquals(3, tempObserverA.lastReceivedShipment?.getImmutableUpdateHistory()?.size, "Observer A should perceive all 3 updates for Shipment A.")
+
+
+        val shipmentB = simulator.findShipment("SHIP_OBSERVER_B")
+        assertNotNull(shipmentB, "Shipment B should have been created by the simulator.")
+        val tempObserverB = MockComplexShipmentObserver()
+        shipmentB.addObserver(tempObserverB)
+        shipmentB.notifyObservers() // Force a final notification
+        assertTrue(tempObserverB.updateCalledCount > 0, "Observer B should have been notified at least once (for final state).")
+        assertEquals("Lost", tempObserverB.lastReceivedShipment?.status, "Observer B should perceive Shipment B as Lost.")
+        assertEquals(3, tempObserverB.lastReceivedShipment?.getImmutableUpdateHistory()?.size, "Observer B should perceive all 3 updates for Shipment B.")
 
         deleteTestFile()
     }
