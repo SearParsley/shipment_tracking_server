@@ -1,10 +1,10 @@
 package marcus.hansen
 
 data class ShippingUpdate(
-    val updateType: String,      // e.g., "created", "shipped", "location"
-    val shipmentId: String,      // The ID of the shipment being updated
-    val timestamp: Long,         // The timestamp of when this update occurred
-    val otherInfo: List<String> = emptyList() // Optional additional information
+    val updateType: String,
+    val shipmentId: String,
+    val timestamp: Long,
+    val otherInfo: List<String> = emptyList()
 ) {
     companion object {
         /**
@@ -15,9 +15,6 @@ data class ShippingUpdate(
          * @return A new ShippingUpdate object.
          */
         fun fromString(line: String): ShippingUpdate {
-            // Split the line by the first 3 commas to separate fixed fields from potential 'otherInfo'
-            // Using limit = 4 means it will split into at most 4 parts:
-            // [updateType, shipmentId, timestamp, rest_of_line_as_one_string]
             val parts = line.split(",", limit = 4)
 
             if (parts.size < 3) {
@@ -30,11 +27,10 @@ data class ShippingUpdate(
 
             val otherInfoList: List<String>
 
-            // Check if there's a 4th part which would be the 'otherInfo'
             if (parts.size == 4) {
                 val rawOtherInfo = parts[3].trim()
                 otherInfoList = when (updateType) {
-                    "noteadded" -> listOf(rawOtherInfo) // Treat entire string as one note
+                    "noteadded" -> listOf(rawOtherInfo)
                     else -> listOf(rawOtherInfo)
                 }
             } else {

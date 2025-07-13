@@ -1,9 +1,8 @@
 package marcus.hansen
 
 open class Shipment(open val id: String) {
-    // Attributes with their desired visibility for setters
     open var status: String = "Unknown"
-        internal set // Setter is internal
+        internal set
     open var expectedDeliveryDateTimestamp: Long? = null
         internal set
     open var currentLocation: String? = null
@@ -33,7 +32,6 @@ open class Shipment(open val id: String) {
         observers.forEach { it.update(this) }
     }
 
-    // getters return immutable versions of the lists
     open fun getImmutableNotes(): List<String> = notes.toList()
     open fun getImmutableUpdateHistory(): List<ShippingUpdate> = updateHistory.toList()
 }

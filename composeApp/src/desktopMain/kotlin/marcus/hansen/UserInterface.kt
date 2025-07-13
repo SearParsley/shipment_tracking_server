@@ -4,76 +4,61 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.* // Essential Compose runtime APIs (remember, mutableStateOf, etc.)
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch // For launching coroutines for suspend functions
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class) // For OutlinedTextField
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserInterface(trackingSimulator: TrackingSimulator) {
-    // ---- UI State Management ----
-    // These states are managed within the Composable's lifecycle (remember)
-    // and trigger recomposition when their values change. This is standard Compose behavior.
-    var shipmentIdInput by remember { mutableStateOf("") } // Input field text
-    val trackedShipments = remember { mutableStateListOf<TrackerViewHelper>() } // List of items to display
-    var errorMessage by remember { mutableStateOf<String?>(null) } // Error message display
+    var shipmentIdInput by remember { mutableStateOf("") }
+    val trackedShipments = remember { mutableStateListOf<TrackerViewHelper>() }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Coroutine scope tied to the Composable's lifecycle.
-    // Necessary for launching suspend functions like trackingSimulator.findShipment().
     val coroutineScope = rememberCoroutineScope()
 
-    // Map to keep track of the Tracker instances. This allows us to remove observers later.
-    // Uses mutableStateMapOf for Compose's observability.
     val activeTrackers = remember { mutableStateMapOf<String, Tracker>() }
 
-    // ---- Event Handlers (Lambdas for UI Actions) ----
-
-    // Function to handle tracking a shipment when the "Track" button is clicked.
     val trackShipment: (String) -> Unit = { idToTrack ->
-        errorMessage = null // Clear any previous error message
-        coroutineScope.launch { // Launch in a coroutine as findShipment might be suspend (or for good practice)
-            val shipment = trackingSimulator.findShipment(idToTrack) // Interact with the core simulator logic
+        errorMessage = null
+        coroutineScope.launch {
+            val shipment = trackingSimulator.findShipment(idToTrack)
             if (shipment != null) {
                 if (trackedShipments.any { it.shipmentId == idToTrack }) {
-                    // Check if already tracking this shipment
                     errorMessage = "Shipment $idToTrack is already being tracked."
                 } else {
-                    // Create ViewModel and Tracker for the new tracked shipment
                     val viewModel = TrackerViewHelper(idToTrack)
+
                     val tracker = Tracker(idToTrack, viewModel)
 
-                    shipment.addObserver(tracker) // Register the Tracker as an observer to the Shipment
-                    activeTrackers[idToTrack] = tracker // Store the Tracker instance for later removal
-
-                    // Immediately update the ViewModel with the shipment's current data for initial display
-                    // This ensures the UI shows data before any further simulation updates occur.
+                    shipment.addObserver(tracker)
+                    activeTrackers[idToTrack] = tracker
                     tracker.update(shipment)
-
-                    trackedShipments.add(viewModel) // Add the ViewModel to the observable list, triggering UI update
-                    shipmentIdInput = "" // Clear the input field after tracking
-                    println("UI: Started tracking shipment $idToTrack") // Console log for desktop debugging
+                    trackedShipments.add(viewModel)
+                    shipmentIdInput = ""
+                    println("UI: Started tracking shipment $idToTrack")
                 }
             } else {
-                errorMessage = "Shipment with ID '$idToTrack' not found." // Display error for non-existent shipment
-                println("UI: Shipment $idToTrack not found.") // Console log
+                errorMessage = "Shipment with ID '$idToTrack' not found."
+                println("UI: Shipment $idToTrack not found.")
             }
         }
     }
 
-    // Function to handle stopping tracking a shipment when an "X" or "Stop Tracking" button is clicked.
     val stopTracking: (String) -> Unit = { idToStopTracking ->
         val viewModelToRemove = trackedShipments.find { it.shipmentId == idToStopTracking }
         if (viewModelToRemove != null) {
-            trackedShipments.remove(viewModelToRemove) // Remove from UI's observable list
+            trackedShipments.remove(viewModelToRemove)
 
-            val tracker = activeTrackers.remove(idToStopTracking) // Get and remove the Tracker instance
+            val tracker = activeTrackers.remove(idToStopTracking)
+
             if (tracker != null) {
                 coroutineScope.launch {
                     val shipment = trackingSimulator.findShipment(idToStopTracking)
-                    shipment?.removeObserver(tracker) // Remove the Tracker as an observer from the Shipment
-                    println("UI: Stopped tracking shipment $idToStopTracking") // Console log
+                    shipment?.removeObserver(tracker)
+                    println("UI: Stopped tracking shipment $idToStopTracking")
                 }
             }
         } else {
@@ -81,35 +66,33 @@ fun UserInterface(trackingSimulator: TrackingSimulator) {
         }
     }
 
-    // ---- Compose UI Layout ----
-    Scaffold( // Basic Material Design layout structure
+    Scaffold(
         topBar = {
             TopAppBar(title = { Text("Shipment Tracking Simulator") })
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier // Standard Compose modifier for layout
-                .fillMaxSize() // Takes up all available space
-                .padding(paddingValues) // Respects Scaffold's padding
-                .padding(16.dp), // Adds internal padding
-            horizontalAlignment = Alignment.CenterHorizontally // Centers content horizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Input field and buttons
             Row(
-                modifier = Modifier.fillMaxWidth(), // Fills width
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp) // Spacing between elements
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField( // Material Design text field
                     value = shipmentIdInput,
                     onValueChange = { shipmentIdInput = it },
                     label = { Text("Shipment ID") },
                     singleLine = true,
-                    modifier = Modifier.weight(1f) // Takes remaining width in the row
+                    modifier = Modifier.weight(1f)
                 )
-                Button( // Standard Material Design button
+                Button(
                     onClick = { trackShipment(shipmentIdInput) },
-                    enabled = shipmentIdInput.isNotBlank() // Button enabled only if input is not blank
+                    enabled = shipmentIdInput.isNotBlank()
                 ) {
                     Text("Track")
                 }
@@ -121,22 +104,20 @@ fun UserInterface(trackingSimulator: TrackingSimulator) {
                 }
             }
 
-            // Error message display area
-            errorMessage?.let { message -> // Only display if errorMessage is not null
+            errorMessage?.let { message ->
                 Text(
                     text = message,
-                    color = MaterialTheme.colorScheme.error, // Red error color
+                    color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             }
 
-            Spacer(Modifier.height(16.dp)) // Vertical spacing
+            Spacer(Modifier.height(16.dp))
 
-            // List of tracked shipments displayed in a scrollable column
             if (trackedShipments.isEmpty()) {
                 Text("No shipments currently tracked. Enter an ID above to start tracking.")
             } else {
-                LazyColumn( // Efficiently renders only visible items in a scrollable list
+                LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
@@ -166,7 +147,7 @@ fun ShipmentCard(viewModel: TrackerViewHelper, onStopTracking: (String) -> Unit)
             ) {
                 Text("Shipment ID: ${viewModel.shipmentId}", style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = { onStopTracking(viewModel.shipmentId) }) {
-                    Text("X", color = MaterialTheme.colorScheme.error) // Simple "X" button to stop tracking
+                    Text("X", color = MaterialTheme.colorScheme.error)
                 }
             }
             Spacer(Modifier.height(8.dp))

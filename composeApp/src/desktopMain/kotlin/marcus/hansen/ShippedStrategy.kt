@@ -5,7 +5,7 @@ class ShippedStrategy : UpdateStrategy {
         shipment.status = "Shipped"
         if (update.otherInfo.isNotEmpty()) {
             try {
-                shipment.expectedDeliveryDateTimestamp = update.otherInfo[0].toLong() // Using internal set
+                shipment.expectedDeliveryDateTimestamp = update.otherInfo[0].toLong()
             } catch (e: NumberFormatException) {
                 System.err.println("ShippedStrategy: Invalid timestamp format in otherInfo for shipment ${shipment.id}: ${update.otherInfo[0]}")
             }
