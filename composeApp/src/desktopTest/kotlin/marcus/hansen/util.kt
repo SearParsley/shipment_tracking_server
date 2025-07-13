@@ -1,10 +1,5 @@
 package marcus.hansen
 
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
-
-// Helper class to act as a mock observer for testing notifyObservers()
 internal class MockShipmentObserver : ShipmentObserver {
     /**
      * Flag to indicate if the update method was called.
@@ -74,17 +69,12 @@ internal class MockComplexShipmentObserver : ShipmentObserver {
  * @return A new Shipment object with the same ID and copied state properties.
  */
 internal fun Shipment.copyStateForTest(): Shipment {
-    val copy = Shipment(this.id) // Create a new Shipment instance with the same ID
-    copy.status = this.status // Copy status
-    copy.currentLocation = this.currentLocation // Copy current location
-    copy.expectedDeliveryDateTimestamp = this.expectedDeliveryDateTimestamp // Copy expected delivery timestamp
-
-    // Copy the contents of notes list using addNote
+    val copy = Shipment(this.id)
+    copy.status = this.status
+    copy.currentLocation = this.currentLocation
+    copy.expectedDeliveryDateTimestamp = this.expectedDeliveryDateTimestamp
     this.getImmutableNotes().forEach { copy.addNote(it) }
-
-    // Copy the contents of updateHistory list using addUpdate
     this.getImmutableUpdateHistory().forEach { copy.addUpdate(it) }
-
     return copy
 }
 
@@ -93,48 +83,31 @@ internal fun Shipment.copyStateForTest(): Shipment {
  * It allows controlling its properties and verifying observer interactions.
  */
 class MockShipment(override val id: String) : Shipment(id) {
-    // Override properties to make them settable for mocking purposes within the test
     override var status: String = "Unknown"
-        internal set
     override var currentLocation: String? = null
-        internal set
     override var expectedDeliveryDateTimestamp: Long? = null
-        internal set
-
-    // Mock the internal lists and methods as well if needed for specific tests
     private val _mockNotes = mutableListOf<String>()
     private val _mockUpdateHistory = mutableListOf<ShippingUpdate>()
-
-    // For simplicity, we'll use a direct list of mock observers to verify calls
     val mockObservers = mutableListOf<ShipmentObserver>()
 
     override fun addObserver(observer: ShipmentObserver) {
         mockObservers.add(observer)
-        // Simulate initial update to observer if that's the test's intent
-        // observer.update(this) // Uncomment if addObserver should immediately notify
     }
 
     override fun removeObserver(observer: ShipmentObserver) {
         mockObservers.remove(observer)
     }
 
-    // In a mock, notifyObservers might be spied on or just ensure observers are present
-    // The actual update logic is handled by the real Tracker
     override fun notifyObservers() {
-        // For tests, you might spy on this, or ensure it's called.
-        // The MockShipmentObserver used by Tracker already verifies update() call.
+
     }
 
-    // Ensure mock getters return controlled values if needed, or rely on super for basic tests
     override fun getImmutableNotes(): List<String> = _mockNotes.toList()
     override fun getImmutableUpdateHistory(): List<ShippingUpdate> = _mockUpdateHistory.toList()
 
-    // Helpers to populate mock state for tests
     fun addMockNote(note: String) { _mockNotes.add(note) }
     fun addMockUpdate(update: ShippingUpdate) { _mockUpdateHistory.add(update) }
 
-    // Helper for tests to manually trigger an update notification on *this mock*
-    // This is useful for simulating a Shipment changing its state and notifying its direct observers.
     fun triggerObserverUpdate() {
         mockObservers.forEach { it.update(this) }
     }
@@ -145,19 +118,17 @@ class MockShipment(override val id: String) : Shipment(id) {
  * It allows controlling the behavior of findShipment().
  */
 class MockTrackingSimulator : TrackingSimulator() {
-    var findShipmentResult: Shipment? = null // What findShipment will return
+    var findShipmentResult: Shipment? = null
     var findShipmentCalledWith: String? = null
     var findShipmentCallCount = 0
 
-    // Override findShipment to control its return value for tests
     override fun findShipment(id: String): Shipment? {
         findShipmentCalledWith = id
         findShipmentCallCount++
         return findShipmentResult
     }
 
-    // Mock runSimulation since it involves file I/O and delays, not relevant for UI logic tests directly
     override suspend fun runSimulation(filePath: String) {
-        // Do nothing or mock specific behavior if needed for UI integration
+
     }
 }

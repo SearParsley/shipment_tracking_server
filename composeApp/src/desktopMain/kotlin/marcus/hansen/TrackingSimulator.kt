@@ -1,12 +1,11 @@
 package marcus.hansen
 
-import kotlinx.coroutines.delay // Import for the delay function
+import kotlinx.coroutines.delay
 import java.io.File
 
 open class TrackingSimulator {
     private val shipments: MutableMap<String, Shipment> = mutableMapOf()
 
-    // Initialize map with ALL concrete UpdateStrategy implementations
     private val updateStrategies: Map<String, UpdateStrategy> = mapOf(
         "created" to CreatedStrategy(),
         "shipped" to ShippedStrategy(),
@@ -39,7 +38,7 @@ open class TrackingSimulator {
         if (!file.exists()) {
             System.err.println("Tracking Simulator ERROR: File not found at path: ${file.absolutePath}")
             System.err.println("Tracking Simulator: Current working directory: ${System.getProperty("user.dir")}")
-            return // Exit if file not found
+            return
         }
         println("Tracking Simulator: File found. Starting comprehensive simulation.")
 
@@ -66,7 +65,6 @@ open class TrackingSimulator {
             val shipmentId = update.shipmentId
             var shipment = shipments[shipmentId]
 
-            // Handle "created" updates: create shipment if it doesn't exist
             if (update.updateType == "created") {
                 if (shipment == null) {
                     shipment = Shipment(shipmentId)
@@ -76,9 +74,8 @@ open class TrackingSimulator {
                     println("Tracking Simulator: Shipment $shipmentId already exists. Applying 'created' update again.")
                 }
             } else if (shipment == null) {
-                // For non-creation updates, if shipment doesn't exist, log and skip
                 println("Tracking Simulator: Error: Update for non-existent shipment ID: $shipmentId (Type: ${update.updateType}). Skipping.")
-                delay(1000L) // Still apply delay even if skipping, to simulate real-time processing
+                delay(1000L)
                 continue
             }
 
@@ -89,12 +86,11 @@ open class TrackingSimulator {
             } else {
                 println("Tracking Simulator: Strategy not found for type '${update.updateType}' or shipment is null.")
             }
-            delay(1000L) // Apply 1-second delay as per requirement
+            delay(1000L)
         }
         println("Tracking Simulator: Comprehensive simulation finished.")
     }
 
-    // getStrategy is now private and only used internally by runSimulation
     private fun getStrategy(updateType: String): UpdateStrategy? {
         return updateStrategies[updateType]
     }

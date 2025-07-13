@@ -1,4 +1,3 @@
-// TrackerViewHelper.kt
 package marcus.hansen
 
 import androidx.compose.runtime.getValue

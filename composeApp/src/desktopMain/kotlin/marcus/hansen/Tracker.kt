@@ -18,25 +18,21 @@ class Tracker(
      * @param shipment The Shipment object that has been updated.
      */
     override fun update(shipment: Shipment) {
-        if (shipment.id == trackedShipmentId) {
-            trackerViewModel.shipmentStatus = shipment.status
-            trackerViewModel.currentLocation = shipment.currentLocation
-            trackerViewModel.expectedShipmentDeliveryDate = shipment.expectedDeliveryDateTimestamp?.let { timestamp ->
-                val instant = Instant.ofEpochMilli(timestamp)
-                val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                dateTime.format(formatter)
-            } ?: "N/A"
-            trackerViewModel.shipmentNotes = shipment.getImmutableNotes().toTypedArray()
-            trackerViewModel.shipmentUpdateHistory = shipment.getImmutableUpdateHistory().map { update ->
-                val formattedTimestamp = Instant.ofEpochMilli(update.timestamp)
-                    .atZone(ZoneId.systemDefault())
-                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                "${update.updateType.capitalize()} on $formattedTimestamp (ID: ${update.shipmentId})"
-            }.toTypedArray()
-
-        } else {
-            // Log this case if an observer somehow gets an unrelated notification (for debugging)
-        }
+        if (shipment.id != trackedShipmentId) return
+        trackerViewModel.shipmentStatus = shipment.status
+        trackerViewModel.currentLocation = shipment.currentLocation
+        trackerViewModel.expectedShipmentDeliveryDate = shipment.expectedDeliveryDateTimestamp?.let { timestamp ->
+            val instant = Instant.ofEpochMilli(timestamp)
+            val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            dateTime.format(formatter)
+        } ?: "N/A"
+        trackerViewModel.shipmentNotes = shipment.getImmutableNotes().toTypedArray()
+        trackerViewModel.shipmentUpdateHistory = shipment.getImmutableUpdateHistory().map { update ->
+            val formattedTimestamp = Instant.ofEpochMilli(update.timestamp)
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+            "${update.updateType.capitalize()} on $formattedTimestamp (ID: ${update.shipmentId})"
+        }.toTypedArray()
     }
 }
