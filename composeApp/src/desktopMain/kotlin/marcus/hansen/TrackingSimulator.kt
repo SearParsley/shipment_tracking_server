@@ -3,7 +3,7 @@ package marcus.hansen
 import kotlinx.coroutines.delay // Import for the delay function
 import java.io.File
 
-class TrackingSimulator {
+open class TrackingSimulator {
     private val shipments: MutableMap<String, Shipment> = mutableMapOf()
 
     // Initialize map with ALL concrete UpdateStrategy implementations
@@ -22,7 +22,7 @@ class TrackingSimulator {
         shipments[shipment.id] = shipment
     }
 
-    fun findShipment(id: String): Shipment? {
+    open fun findShipment(id: String): Shipment? {
         return shipments[id]
     }
 
@@ -32,7 +32,7 @@ class TrackingSimulator {
      *
      * @param filePath The path to the file containing shipment update data.
      */
-    suspend fun runSimulation(filePath: String) {
+    open suspend fun runSimulation(filePath: String) {
         println("TrackingSimulator: Starting comprehensive simulation from file: $filePath")
         val lines = try {
             File(filePath).readLines()
