@@ -29,15 +29,24 @@ open class TrackingSimulator {
     /**
      * Runs the simulation by reading update data from a file and processing each update.
      * Includes all strategy types and applies a 1-second delay between updates.
+     * Added logging for file loading debug.
      *
      * @param filePath The path to the file containing shipment update data.
      */
     open suspend fun runSimulation(filePath: String) {
-        println("TrackingSimulator: Starting comprehensive simulation from file: $filePath")
+        val file = File(filePath)
+        println("TrackSim: Attempting to load updates from: ${file.absolutePath}")
+        if (!file.exists()) {
+            System.err.println("TrackSim ERROR: File not found at path: ${file.absolutePath}")
+            System.err.println("TrackSim: Current working directory: ${System.getProperty("user.dir")}")
+            return // Exit if file not found
+        }
+        println("TrackSim: File found. Starting comprehensive simulation.")
+
         val lines = try {
-            File(filePath).readLines()
+            file.readLines()
         } catch (e: Exception) {
-            println("TrackingSimulator: Error reading file $filePath: ${e.message}")
+            System.err.println("TrackSim ERROR: Failed to read file $filePath: ${e.message}")
             return
         }
 
@@ -45,10 +54,10 @@ open class TrackingSimulator {
             try {
                 ShippingUpdate.fromString(line)
             } catch (e: IllegalArgumentException) {
-                println("TrackingSimulator: Skipping malformed update line: '$line' - ${e.message}")
+                System.err.println("TrackSim: Skipping malformed update line: '$line' - ${e.message}")
                 null
             } catch (e: NumberFormatException) {
-                println("TrackingSimulator: Skipping update with invalid timestamp: '$line' - ${e.message}")
+                System.err.println("TrackSim: Skipping update with invalid timestamp: '$line' - ${e.message}")
                 null
             }
         }
@@ -62,27 +71,27 @@ open class TrackingSimulator {
                 if (shipment == null) {
                     shipment = Shipment(shipmentId)
                     addShipment(shipment)
-                    println("TrackingSimulator: Created new shipment: $shipmentId")
+                    println("TrackSim: Created new shipment: $shipmentId")
                 } else {
-                    println("TrackingSimulator: Shipment $shipmentId already exists. Applying 'created' update again.")
+                    println("TrackSim: Shipment $shipmentId already exists. Applying 'created' update again.")
                 }
             } else if (shipment == null) {
                 // For non-creation updates, if shipment doesn't exist, log and skip
-                println("TrackingSimulator: Error: Update for non-existent shipment ID: $shipmentId (Type: ${update.updateType}). Skipping.")
+                println("TrackSim: Error: Update for non-existent shipment ID: $shipmentId (Type: ${update.updateType}). Skipping.")
                 delay(1000L) // Still apply delay even if skipping, to simulate real-time processing
                 continue
             }
 
             val strategy = updateStrategies[update.updateType]
-            if (strategy != null && shipment != null) {
+            if (strategy != null) {
                 strategy.update(shipment, update)
-                println("TrackingSimulator: Processed '${update.updateType}' update for $shipmentId.")
+                println("TrackSim: Processed '${update.updateType}' update for $shipmentId.")
             } else {
-                println("TrackingSimulator: Strategy not found for type '${update.updateType}' or shipment is null.")
+                println("TrackSim: Strategy not found for type '${update.updateType}' or shipment is null.")
             }
             delay(1000L) // Apply 1-second delay as per requirement
         }
-        println("TrackingSimulator: Comprehensive simulation finished.")
+        println("TrackSim: Comprehensive simulation finished.")
     }
 
     // getStrategy is now private and only used internally by runSimulation
