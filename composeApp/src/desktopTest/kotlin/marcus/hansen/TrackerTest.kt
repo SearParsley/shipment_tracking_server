@@ -30,7 +30,7 @@ class TrackerTest {
         // Assert TrackerViewHelper's state
         assertEquals("Created", viewModel.shipmentStatus)
         assertEquals("Warehouse A", viewModel.currentLocation)
-        assertEquals("123456789", viewModel.expectedShipmentDeliveryDate) // String format
+        assertEquals("1970-01-02 03:17:36", viewModel.expectedShipmentDeliveryDate) // String format
         assertContentEquals(arrayOf("Initial note."), viewModel.shipmentNotes)
         assertEquals(1, viewModel.shipmentUpdateHistory.size)
         assertTrue(viewModel.shipmentUpdateHistory[0].contains("Created"), "Formatted history should contain 'Created'")
@@ -168,7 +168,7 @@ class TrackerTest {
 
         assertEquals("Created", viewModel.shipmentStatus)
         assertNull(viewModel.currentLocation)
-        assertNull(viewModel.expectedShipmentDeliveryDate)
+        assertEquals("N/A", viewModel.expectedShipmentDeliveryDate)
         assertTrue(viewModel.shipmentNotes.isEmpty())
         assertEquals(1, viewModel.shipmentUpdateHistory.size)
         assertTrue(viewModel.shipmentUpdateHistory[0].contains("Created"))

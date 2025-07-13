@@ -1,7 +1,9 @@
 package marcus.hansen
 
-import java.util.Locale
-import java.util.Locale.getDefault
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class Tracker(
     private val trackedShipmentId: String,
@@ -11,6 +13,7 @@ class Tracker(
     /**
      * Called by the observed Shipment when its state changes.
      * This method pulls the latest data from the Shipment and updates the TrackerViewHelper.
+     * It now formats the timestamp to a human-readable form.
      *
      * @param shipment The Shipment object that has been updated.
      */
@@ -18,21 +21,22 @@ class Tracker(
         if (shipment.id == trackedShipmentId) {
             trackerViewModel.shipmentStatus = shipment.status
             trackerViewModel.currentLocation = shipment.currentLocation
-            // Convert Long timestamp to String for display as per TrackerViewHelper's type
-            trackerViewModel.expectedShipmentDeliveryDate = shipment.expectedDeliveryDateTimestamp?.toString()
+            trackerViewModel.expectedShipmentDeliveryDate = shipment.expectedDeliveryDateTimestamp?.let { timestamp ->
+                val instant = Instant.ofEpochMilli(timestamp)
+                val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                dateTime.format(formatter)
+            } ?: "N/A"
             trackerViewModel.shipmentNotes = shipment.getImmutableNotes().toTypedArray()
-
-            // Format update history for display. This might need more sophisticated logic
-            // to achieve the "Shipment went from {previousStatus} to {newStatus} on {dateOfUpdate}" format.
-            // For now, a simpler representation of each update in history.
             trackerViewModel.shipmentUpdateHistory = shipment.getImmutableUpdateHistory().map { update ->
-                "${update.updateType.replaceFirstChar { if (it.isLowerCase()) it.titlecase(getDefault()) else it.toString() }} on ${update.timestamp} (ID: ${update.shipmentId})"
-                // Further formatting for detailed updates can be added here
+                val formattedTimestamp = Instant.ofEpochMilli(update.timestamp)
+                    .atZone(ZoneId.systemDefault())
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                "${update.updateType.capitalize()} on $formattedTimestamp (ID: ${update.shipmentId})"
             }.toTypedArray()
+
         } else {
-            // This case should ideally not happen if observer registration is managed correctly
-            // but is useful for debugging if an observer somehow gets an unrelated notification.
-             println("Tracker: Received update for unexpected shipment ID: ${shipment.id}. Expected: $trackedShipmentId (Correctly ignored)")
+            // Log this case if an observer somehow gets an unrelated notification (for debugging)
         }
     }
 }
