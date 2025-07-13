@@ -1,17 +1,17 @@
+// TrackerViewHelper.kt
 package marcus.hansen
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 class TrackerViewHelper(val shipmentId: String) {
 
-    var shipmentStatus: String = "N/A"
-        internal set
-    var currentLocation: String? = null
-        internal set
-    var expectedShipmentDeliveryDate: String? = null // Stored as String for display
-        internal set
-    var shipmentNotes: Array<String> = emptyArray()
-        internal set
-    var shipmentUpdateHistory: Array<String> = emptyArray()
-        internal set
+    var shipmentStatus: String by mutableStateOf("N/A")
+    var currentLocation: String? by mutableStateOf(null)
+    var expectedShipmentDeliveryDate: String? by mutableStateOf(null)
+    var shipmentNotes: Array<String> by mutableStateOf(emptyArray())
+    var shipmentUpdateHistory: Array<String> by mutableStateOf(emptyArray())
 
     internal fun reset() {
         shipmentStatus = "N/A"

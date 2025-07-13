@@ -1,12 +1,12 @@
 package marcus.hansen
 
-class Shipment(val id: String) {
+open class Shipment(open val id: String) {
     // Attributes with their desired visibility for setters
-    var status: String = "Unknown"
+    open var status: String = "Unknown"
         internal set // Setter is internal
-    var expectedDeliveryDateTimestamp: Long? = null
+    open var expectedDeliveryDateTimestamp: Long? = null
         internal set
-    var currentLocation: String? = null
+    open var currentLocation: String? = null
         internal set
     val notes: MutableList<String> = mutableListOf()
     val updateHistory: MutableList<ShippingUpdate> = mutableListOf()
@@ -21,19 +21,19 @@ class Shipment(val id: String) {
         updateHistory.add(update)
     }
 
-    fun addObserver(observer: ShipmentObserver) {
+    open fun addObserver(observer: ShipmentObserver) {
         observers.add(observer)
     }
 
-    fun removeObserver(observer: ShipmentObserver) {
+    open fun removeObserver(observer: ShipmentObserver) {
         observers.remove(observer)
     }
 
-    fun notifyObservers() {
+    open fun notifyObservers() {
         observers.forEach { it.update(this) }
     }
 
     // getters return immutable versions of the lists
-    fun getImmutableNotes(): List<String> = notes.toList()
-    fun getImmutableUpdateHistory(): List<ShippingUpdate> = updateHistory.toList()
+    open fun getImmutableNotes(): List<String> = notes.toList()
+    open fun getImmutableUpdateHistory(): List<ShippingUpdate> = updateHistory.toList()
 }
