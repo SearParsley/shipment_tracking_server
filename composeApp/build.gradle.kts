@@ -33,6 +33,7 @@ kotlin {
         desktopTest.dependencies {
             runtimeOnly(libs.junit.jupiter.engine)
             implementation(libs.kotlinx.coroutinesTest)
+            implementation(libs.mockk)
         }
     }
 }
