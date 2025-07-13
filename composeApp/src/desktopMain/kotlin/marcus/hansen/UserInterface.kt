@@ -130,10 +130,9 @@ fun UserInterface(trackingSimulator: TrackingSimulator) {
     }
 }
 
-// Composable for displaying a single shipment's details in a card format
 @Composable
 fun ShipmentCard(viewModel: TrackerViewHelper, onStopTracking: (String) -> Unit) {
-    Card( // Material Design card component
+    Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
