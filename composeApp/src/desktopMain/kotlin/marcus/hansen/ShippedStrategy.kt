@@ -5,7 +5,13 @@ class ShippedStrategy : UpdateStrategy {
         shipment.status = "Shipped"
         if (update.otherInfo.isNotEmpty()) {
             try {
-                shipment.expectedDeliveryDateTimestamp = update.otherInfo[0].toLong()
+                val newExpectedTimestamp = update.otherInfo[0].toLong()
+                try {
+                    shipment.expectedDeliveryDateTimestamp = newExpectedTimestamp
+                    performRuleValidation(shipment, newExpectedTimestamp, update.updateType)
+                } catch (e: Exception) {
+                    shipment.ruleViolations.clear()
+                }
             } catch (e: NumberFormatException) {
                 System.err.println("ShippedStrategy: Invalid timestamp format in otherInfo for shipment ${shipment.id}: ${update.otherInfo[0]}")
             }
