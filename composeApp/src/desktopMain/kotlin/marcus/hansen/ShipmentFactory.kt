@@ -1,7 +1,7 @@
 package marcus.hansen
 
 object ShipmentFactory {
-    fun createShipment(id: String, typeString: String): Shipment {
+    fun createShipment(id: String, typeString: String, createdTimestamp: Long = System.currentTimeMillis()): Shipment {
         val type = try {
             ShipmentType.valueOf(typeString.uppercase())
         } catch (e: IllegalArgumentException) {
@@ -9,10 +9,10 @@ object ShipmentFactory {
         }
 
         return when (type) {
-            ShipmentType.STANDARD -> StandardShipment(id)
-            ShipmentType.EXPRESS -> ExpressShipment(id)
-            ShipmentType.OVERNIGHT -> OvernightShipment(id)
-            ShipmentType.BULK -> BulkShipment(id)
+            ShipmentType.STANDARD -> StandardShipment(id, createdTimestamp)
+            ShipmentType.EXPRESS -> ExpressShipment(id, createdTimestamp)
+            ShipmentType.OVERNIGHT -> OvernightShipment(id, createdTimestamp)
+            ShipmentType.BULK -> BulkShipment(id, createdTimestamp)
         }
     }
 }

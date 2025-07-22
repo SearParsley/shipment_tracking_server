@@ -1,3 +1,3 @@
 package marcus.hansen
 
-class StandardShipment(id: String) : Shipment(id, ShipmentType.STANDARD)
+class StandardShipment(id: String, createdTimestamp: Long) : Shipment(id, ShipmentType.STANDARD, createdTimestamp)
