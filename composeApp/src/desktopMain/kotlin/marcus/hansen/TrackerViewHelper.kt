@@ -11,6 +11,7 @@ class TrackerViewHelper(val shipmentId: String) {
     var expectedShipmentDeliveryDate: String? by mutableStateOf(null)
     var shipmentNotes: Array<String> by mutableStateOf(emptyArray())
     var shipmentUpdateHistory: Array<String> by mutableStateOf(emptyArray())
+    var ruleViolations: Array<String> by mutableStateOf(emptyArray())
 
     internal fun reset() {
         shipmentStatus = "N/A"
@@ -18,5 +19,6 @@ class TrackerViewHelper(val shipmentId: String) {
         expectedShipmentDeliveryDate = null
         shipmentNotes = emptyArray()
         shipmentUpdateHistory = emptyArray()
+        ruleViolations = emptyArray()
     }
 }
