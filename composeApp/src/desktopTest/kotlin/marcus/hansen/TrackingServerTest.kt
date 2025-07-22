@@ -16,51 +16,70 @@ class TrackingServerTest {
     }
 
     @Test
-    fun `processUpdateString should correctly process a 'created' update`() {
-        val shipmentId = "TEST_SHIP_001"
-        val updateString = "created,$shipmentId,1678886400000"
+    fun `processUpdateString should correctly create a StandardShipment on 'created' update without type`() {
+        val shipmentId = "TS_001"
+        val updateString = "created,$shipmentId,1678886400000" // No type specified, should default
 
         val response = TrackingServer.processUpdateString(updateString)
 
         assertEquals("Success: Update processed for $shipmentId.", response)
         val shipment = TrackingServer.findShipment(shipmentId)
-        assertNotNull(shipment, "Shipment $shipmentId should be found after processing")
-        assertEquals("Created", shipment.status, "Shipment status should be 'Created'")
-        assertEquals(1, shipment.getImmutableUpdateHistory().size, "Shipment history should contain one update")
+        assertNotNull(shipment, "Shipment $shipmentId should be found")
+        assertEquals(ShipmentType.STANDARD, shipment?.type, "Shipment type should default to STANDARD")
+        assertTrue(shipment is StandardShipment, "Shipment should be an instance of StandardShipment")
+        assertEquals("Created", shipment?.status)
+        assertEquals(1, shipment?.getImmutableUpdateHistory()?.size)
     }
 
     @Test
-    fun `processUpdateString should correctly process multiple 'created' updates for different shipments`() {
-        val shipmentId1 = "TEST_SHIP_002"
-        val shipmentId2 = "TEST_SHIP_003"
+    fun `processUpdateString should correctly create an ExpressShipment on 'created' update with type`() {
+        val shipmentId = "TS_002"
+        val updateString = "created,$shipmentId,1678886400000,EXPRESS" // Type specified
 
-        TrackingServer.processUpdateString("created,$shipmentId1,1678886401000")
-        TrackingServer.processUpdateString("created,$shipmentId2,1678886402000")
+        val response = TrackingServer.processUpdateString(updateString)
 
-        val shipment1 = TrackingServer.findShipment(shipmentId1)
-        assertNotNull(shipment1)
-        assertEquals("Created", shipment1.status)
-
-        val shipment2 = TrackingServer.findShipment(shipmentId2)
-        assertNotNull(shipment2)
-        assertEquals("Created", shipment2.status)
-    }
-
-    @Test
-    fun `processUpdateString should handle 'created' update for already existing shipment`() {
-        val shipmentId = "TEST_SHIP_004"
-        TrackingServer.processUpdateString("created,$shipmentId,1678886400000")
-        val initialShipment = TrackingServer.findShipment(shipmentId)
-        assertNotNull(initialShipment)
-        assertEquals(1, initialShipment.getImmutableUpdateHistory().size)
-
-        // Process second 'created' update for same ID
-        TrackingServer.processUpdateString("created,$shipmentId,1678886500000")
-
+        assertEquals("Success: Update processed for $shipmentId.", response)
         val shipment = TrackingServer.findShipment(shipmentId)
         assertNotNull(shipment)
-        assertEquals("Created", shipment.status)
-        assertEquals(2, shipment.getImmutableUpdateHistory().size, "History should contain both 'created' updates")
+        assertEquals(ShipmentType.EXPRESS, shipment?.type, "Shipment type should be EXPRESS")
+        assertTrue(shipment is ExpressShipment, "Shipment should be an instance of ExpressShipment")
+        assertEquals("Created", shipment?.status)
+        assertEquals(1, shipment?.getImmutableUpdateHistory()?.size)
+    }
+
+    @Test
+    fun `processUpdateString should correctly process a subsequent update on a created shipment`() {
+        val shipmentId = "TS_003"
+        // First, create the shipment
+        TrackingServer.processUpdateString("created,$shipmentId,1678886400000,STANDARD")
+        val initialShipment = TrackingServer.findShipment(shipmentId)
+        assertNotNull(initialShipment)
+        assertEquals("Created", initialShipment?.status)
+
+        // Now, process a subsequent update
+        val shippedTimestamp = 1678886500000L
+        val expectedDelivery = 1678900000000L
+        val shippedUpdateString = "shipped,$shipmentId,$shippedTimestamp,$expectedDelivery"
+        val response = TrackingServer.processUpdateString(shippedUpdateString)
+
+        assertEquals("Success: Update processed for $shipmentId.", response)
+        val updatedShipment = TrackingServer.findShipment(shipmentId)
+        assertNotNull(updatedShipment)
+        assertEquals("Shipped", updatedShipment?.status)
+        assertEquals(expectedDelivery, updatedShipment?.expectedDeliveryDateTimestamp)
+        assertEquals(2, updatedShipment?.getImmutableUpdateHistory()?.size) // Created + Shipped update
+    }
+
+    @Test
+    fun `processUpdateString should return error for invalid shipment type string`() {
+        val shipmentId = "TS_004"
+        val updateString = "created,$shipmentId,1678886400000,INVALID_TYPE"
+
+        val response = TrackingServer.processUpdateString(updateString)
+
+        assertTrue(response.contains("Error processing update"))
+        assertTrue(response.contains("Invalid shipment type string: INVALID_TYPE"))
+        assertNull(TrackingServer.findShipment(shipmentId), "Shipment should not be created with invalid type")
     }
 
     @Test
