@@ -26,32 +26,32 @@ object TrackingServer {
 
     fun processUpdateString(updateString: String): String {
         try {
-            val updateData = ShippingUpdate.fromString(updateString)
-            val shipmentId = updateData.shipmentId
+            val update = ShippingUpdate.fromString(updateString)
+            val shipmentId = update.shipmentId
             var shipment = shipments[shipmentId]
 
-            if (updateData.updateType == "created") {
+            if (update.updateType == "created") {
                 if (shipment == null) {
-                    val shipmentTypeString = updateData.otherInfo.firstOrNull() ?: "Standard"
-                    shipment = ShipmentFactory.createShipment(shipmentId, shipmentTypeString)
+                    val shipmentTypeString = update.otherInfo.firstOrNull() ?: "Standard"
+                    shipment = ShipmentFactory.createShipment(shipmentId, shipmentTypeString, update.timestamp)
                     addShipment(shipment)
                     println("Server: Created new shipment: $shipmentId (Type: ${shipment.type})")
                 } else {
                     println("Server: Shipment $shipmentId already exists. Applying 'created' update again.")
                 }
             } else if (shipment == null) {
-                println("Server ERROR: Update for non-existent shipment ID: $shipmentId (Type: ${updateData.updateType}).")
+                println("Server ERROR: Update for non-existent shipment ID: $shipmentId (Type: ${update.updateType}).")
                 return "Error: Shipment $shipmentId not found."
             }
 
-            val strategy = updateStrategies[updateData.updateType]
+            val strategy = updateStrategies[update.updateType]
             if (strategy != null) {
-                strategy.update(shipment, updateData)
-                println("Server: Processed '${updateData.updateType}' update for $shipmentId.")
+                strategy.update(shipment, update)
+                println("Server: Processed '${update.updateType}' update for $shipmentId.")
                 return "Success: Update processed for $shipmentId."
             } else {
-                println("Server ERROR: Strategy not found for type '${updateData.updateType}' or shipment is null.")
-                return "Error: Unknown update type '${updateData.updateType}'."
+                println("Server ERROR: Strategy not found for type '${update.updateType}' or shipment is null.")
+                return "Error: Unknown update type '${update.updateType}'."
             }
         } catch (e: Exception) {
             println("Server ERROR: Failed to process update string '$updateString': ${e.message}")
