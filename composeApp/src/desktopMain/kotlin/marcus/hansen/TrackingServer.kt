@@ -14,8 +14,6 @@ object TrackingServer {
         "noteadded" to NoteAddedStrategy()
     )
 
-    private val shipmentFactory: ShipmentFactory = ShipmentFactory
-
     fun addShipment(shipment: Shipment) {
         shipments[shipment.id] = shipment
     }
