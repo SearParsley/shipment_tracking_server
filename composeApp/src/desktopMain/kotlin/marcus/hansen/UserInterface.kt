@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserInterface(trackingSimulator: TrackingSimulator) {
+fun UserInterface(trackingServer: TrackingServer) {
     var shipmentIdInput by remember { mutableStateOf("") }
     val trackedShipments = remember { mutableStateListOf<TrackerViewHelper>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -24,7 +24,7 @@ fun UserInterface(trackingSimulator: TrackingSimulator) {
     val trackShipment: (String) -> Unit = { idToTrack ->
         errorMessage = null
         coroutineScope.launch {
-            val shipment = trackingSimulator.findShipment(idToTrack)
+            val shipment = trackingServer.findShipment(idToTrack)
             if (shipment != null) {
                 if (trackedShipments.any { it.shipmentId == idToTrack }) {
                     errorMessage = "Shipment $idToTrack is already being tracked."
@@ -56,7 +56,7 @@ fun UserInterface(trackingSimulator: TrackingSimulator) {
 
             if (tracker != null) {
                 coroutineScope.launch {
-                    val shipment = trackingSimulator.findShipment(idToStopTracking)
+                    val shipment = trackingServer.findShipment(idToStopTracking)
                     shipment?.removeObserver(tracker)
                     println("UI: Stopped tracking shipment $idToStopTracking")
                 }
