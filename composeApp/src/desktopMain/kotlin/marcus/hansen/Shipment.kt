@@ -1,14 +1,16 @@
 package marcus.hansen
 
-open class Shipment(open val id: String) {
-    open var status: String = "Unknown"
-        internal set
-    open var expectedDeliveryDateTimestamp: Long? = null
-        internal set
-    open var currentLocation: String? = null
-        internal set
+open class Shipment(
+    val id: String,
+    val type: ShipmentType = ShipmentType.STANDARD,
+    val createdTimestamp: Long = System.currentTimeMillis()
+) {
+    var status: String = "Unknown"
+    var expectedDeliveryDateTimestamp: Long? = null
+    var currentLocation: String? = null
     val notes: MutableList<String> = mutableListOf()
     val updateHistory: MutableList<ShippingUpdate> = mutableListOf()
+    val ruleViolations: MutableList<String> = mutableListOf()
 
     private val observers: MutableList<ShipmentObserver> = mutableListOf()
 
@@ -20,18 +22,18 @@ open class Shipment(open val id: String) {
         updateHistory.add(update)
     }
 
-    open fun addObserver(observer: ShipmentObserver) {
+    fun addObserver(observer: ShipmentObserver) {
         observers.add(observer)
     }
 
-    open fun removeObserver(observer: ShipmentObserver) {
+    fun removeObserver(observer: ShipmentObserver) {
         observers.remove(observer)
     }
 
-    open fun notifyObservers() {
+    fun notifyObservers() {
         observers.forEach { it.update(this) }
     }
 
-    open fun getImmutableNotes(): List<String> = notes.toList()
-    open fun getImmutableUpdateHistory(): List<ShippingUpdate> = updateHistory.toList()
+    fun getImmutableNotes(): List<String> = notes.toList()
+    fun getImmutableUpdateHistory(): List<ShippingUpdate> = updateHistory.toList()
 }
