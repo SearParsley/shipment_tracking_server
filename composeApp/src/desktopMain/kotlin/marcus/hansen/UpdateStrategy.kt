@@ -15,26 +15,6 @@ interface UpdateStrategy {
      */
     fun update(shipment: Shipment, update: ShippingUpdate)
 
-//    /**
-//     * Validates shipment-specific rules based on the update type and expected delivery.
-//     * If a rule is violated, a message is added to the shipment's ruleViolations list.
-//     * This method has a default implementation, so only strategies that need to validate rules
-//     * (e.g., Shipped, Delayed) need to override it or call it.
-//     *
-//     * @param shipment The Shipment object whose rules are being validated.
-//     * @param currentUpdateTimestamp The timestamp of the current update being processed.
-//     * @param expectedDeliveryTimestamp The new expected delivery timestamp.
-//     * @param updateType The type of the current update (e.g., "shipped", "delayed").
-//     */
-//    fun validateShipmentRules(
-//        shipment: Shipment,
-//        currentUpdateTimestamp: Long, // Use this as the "creation" reference if needed, or get from shipment.createdTimestamp
-//        expectedDeliveryTimestamp: Long,
-//        updateType: String
-//    ) {
-//
-//    }
-
     /**
      * Helper function to perform the actual rule validation logic.
      * This can be called by specific strategies.
@@ -77,7 +57,7 @@ interface UpdateStrategy {
                 }
             }
             ShipmentType.STANDARD -> {
-
+                // no rules to follow
             }
         }
     }
