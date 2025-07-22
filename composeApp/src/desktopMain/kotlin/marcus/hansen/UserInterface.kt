@@ -154,6 +154,14 @@ fun ShipmentCard(viewModel: TrackerViewHelper, onStopTracking: (String) -> Unit)
             Text("Location: ${viewModel.currentLocation ?: "N/A"}")
             Text("Expected Delivery: ${viewModel.expectedShipmentDeliveryDate ?: "N/A"}")
 
+            if (viewModel.ruleViolations.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text("Rule Violations:", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.error)
+                viewModel.ruleViolations.forEach { violation ->
+                    Text("  - $violation", color = MaterialTheme.colorScheme.error)
+                }
+            }
+
             if (viewModel.shipmentNotes.isNotEmpty()) {
                 Spacer(Modifier.height(4.dp))
                 Text("Notes:", style = MaterialTheme.typography.titleSmall)

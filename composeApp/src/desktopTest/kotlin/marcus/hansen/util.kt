@@ -77,38 +77,3 @@ internal fun Shipment.copyStateForTest(): Shipment {
     this.getImmutableUpdateHistory().forEach { copy.addUpdate(it) }
     return copy
 }
-
-/**
- * A mock implementation of Shipment for testing purposes.
- * It allows controlling its properties and verifying observer interactions.
- */
-class MockShipment(override val id: String) : Shipment(id) {
-    override var status: String = "Unknown"
-    override var currentLocation: String? = null
-    override var expectedDeliveryDateTimestamp: Long? = null
-    private val _mockNotes = mutableListOf<String>()
-    private val _mockUpdateHistory = mutableListOf<ShippingUpdate>()
-    val mockObservers = mutableListOf<ShipmentObserver>()
-
-    override fun addObserver(observer: ShipmentObserver) {
-        mockObservers.add(observer)
-    }
-
-    override fun removeObserver(observer: ShipmentObserver) {
-        mockObservers.remove(observer)
-    }
-
-    override fun notifyObservers() {
-
-    }
-
-    override fun getImmutableNotes(): List<String> = _mockNotes.toList()
-    override fun getImmutableUpdateHistory(): List<ShippingUpdate> = _mockUpdateHistory.toList()
-
-    fun addMockNote(note: String) { _mockNotes.add(note) }
-    fun addMockUpdate(update: ShippingUpdate) { _mockUpdateHistory.add(update) }
-
-    fun triggerObserverUpdate() {
-        mockObservers.forEach { it.update(this) }
-    }
-}

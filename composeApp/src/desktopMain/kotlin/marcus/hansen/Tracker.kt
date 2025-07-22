@@ -18,7 +18,7 @@ class Tracker(
      * @param shipment The Shipment object that has been updated.
      */
     override fun update(shipment: Shipment) {
-        if (shipment.id != trackedShipmentId) return
+        if (shipment.id != trackedShipmentId) throw Error("Tracker ERROR: shipment id does not match tracked shipment id")
         trackerViewModel.shipmentStatus = shipment.status
         trackerViewModel.currentLocation = shipment.currentLocation
         trackerViewModel.expectedShipmentDeliveryDate = shipment.expectedDeliveryDateTimestamp?.let { timestamp ->
@@ -34,5 +34,6 @@ class Tracker(
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             "${update.updateType.capitalize()} on $formattedTimestamp (ID: ${update.shipmentId})"
         }.toTypedArray()
+        trackerViewModel.ruleViolations = shipment.ruleViolations.toTypedArray()
     }
 }

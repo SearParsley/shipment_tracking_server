@@ -14,6 +14,8 @@ object TrackingServer {
         "noteadded" to NoteAddedStrategy()
     )
 
+    private val shipmentFactory: ShipmentFactory = ShipmentFactory
+
     fun addShipment(shipment: Shipment) {
         shipments[shipment.id] = shipment
     }
@@ -30,11 +32,10 @@ object TrackingServer {
 
             if (updateData.updateType == "created") {
                 if (shipment == null) {
-                    // TODO: implement shipment types
-                    // TODO: use shipment factory
-                    shipment = Shipment(shipmentId)
+                    val shipmentTypeString = updateData.otherInfo.firstOrNull() ?: "Standard"
+                    shipment = ShipmentFactory.createShipment(shipmentId, shipmentTypeString)
                     addShipment(shipment)
-                    println("Server: Created new shipment: $shipmentId")
+                    println("Server: Created new shipment: $shipmentId (Type: ${shipment.type})")
                 } else {
                     println("Server: Shipment $shipmentId already exists. Applying 'created' update again.")
                 }
