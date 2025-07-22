@@ -112,23 +112,3 @@ class MockShipment(override val id: String) : Shipment(id) {
         mockObservers.forEach { it.update(this) }
     }
 }
-
-/**
- * A mock implementation of TrackingSimulator for testing purposes.
- * It allows controlling the behavior of findShipment().
- */
-class MockTrackingSimulator : TrackingSimulator() {
-    var findShipmentResult: Shipment? = null
-    var findShipmentCalledWith: String? = null
-    var findShipmentCallCount = 0
-
-    override fun findShipment(id: String): Shipment? {
-        findShipmentCalledWith = id
-        findShipmentCallCount++
-        return findShipmentResult
-    }
-
-    override suspend fun runSimulation(filePath: String) {
-
-    }
-}
