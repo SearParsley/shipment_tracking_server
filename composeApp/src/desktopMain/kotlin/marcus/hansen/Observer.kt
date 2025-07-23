@@ -1,6 +1,6 @@
 package marcus.hansen
 
-interface ShipmentObserver {
+interface Observer {
     /**
      * Called by a Shipment (Subject) when its state changes.
      * The observer should pull the necessary updated information from the provided shipment object.

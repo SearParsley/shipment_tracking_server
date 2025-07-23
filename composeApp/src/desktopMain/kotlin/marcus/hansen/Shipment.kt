@@ -1,10 +1,10 @@
 package marcus.hansen
 
-open class Shipment(
+open class Shipment (
     val id: String,
     val type: ShipmentType = ShipmentType.STANDARD,
     val createdTimestamp: Long = System.currentTimeMillis()
-) {
+) : Subject {
     var status: String = "Unknown"
     var expectedDeliveryDateTimestamp: Long? = null
     var currentLocation: String? = null
@@ -12,7 +12,7 @@ open class Shipment(
     val updateHistory: MutableList<ShippingUpdate> = mutableListOf()
     val ruleViolations: MutableList<String> = mutableListOf()
 
-    private val observers: MutableList<ShipmentObserver> = mutableListOf()
+    private val observers: MutableList<Observer> = mutableListOf()
 
     fun addNote(note: String) {
         notes.add(note)
@@ -22,15 +22,15 @@ open class Shipment(
         updateHistory.add(update)
     }
 
-    fun addObserver(observer: ShipmentObserver) {
+    override fun addObserver(observer: Observer) {
         observers.add(observer)
     }
 
-    fun removeObserver(observer: ShipmentObserver) {
+    override fun removeObserver(observer: Observer) {
         observers.remove(observer)
     }
 
-    fun notifyObservers() {
+    override fun notifyObservers() {
         observers.forEach { it.update(this) }
     }
 
