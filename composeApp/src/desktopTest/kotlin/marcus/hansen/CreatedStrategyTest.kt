@@ -1,6 +1,5 @@
 package marcus.hansen
 
-// CreatedStrategyTest.kt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -36,19 +35,17 @@ class CreatedStrategyTest {
         val shipmentId = "SHIP_NEW_002"
         val shipment = Shipment(shipmentId)
         val update = ShippingUpdate.fromString("created,$shipmentId,1678886400000")
-        val mockObserver = MockShipmentObserver()
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
 
-        shipment.addObserver(mockObserver) // Register the mock observer
+        shipment.addObserver(tracker)
 
         val strategy = CreatedStrategy()
         strategy.update(shipment, update)
 
-        // Verify that the observer was notified
-        assertTrue(mockObserver.updateCalled)
-        assertNotNull(mockObserver.receivedShipment)
-        assertEquals(shipmentId, mockObserver.receivedShipment?.id)
-        assertEquals("Created", mockObserver.receivedShipment?.status) // Observer should see the updated status
-        assertEquals(1, mockObserver.receivedShipment?.getImmutableUpdateHistory()?.size) // Observer should see the added update
+        assertEquals(shipmentId, viewModel.shipmentId)
+        assertEquals("Created", viewModel.shipmentStatus) // Observer should see the updated status
+        assertEquals(1, viewModel.shipmentUpdateHistory.size) // Observer should see the added update
     }
 
     @Test

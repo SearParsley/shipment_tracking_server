@@ -8,6 +8,9 @@ import kotlin.test.assertNull
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class DelayedStrategyTest {
 
@@ -17,35 +20,43 @@ class DelayedStrategyTest {
         val shipment = Shipment(shipmentId)
         shipment.status = "Shipped"
         val newExpectedTimestamp = 1679999999000L
-        val update = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000,$newExpectedTimestamp")
+        val updateData = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000,$newExpectedTimestamp")
 
-        val strategy = DelayedStrategy()
-        strategy.update(shipment, update)
+        val strategy = DelayedStrategy() // Use the original strategy
+        strategy.update(shipment, updateData)
 
         assertEquals("Delayed", shipment.status)
         assertEquals(newExpectedTimestamp, shipment.expectedDeliveryDateTimestamp)
         assertEquals(1, shipment.getImmutableUpdateHistory().size)
-        assertEquals(update, shipment.getImmutableUpdateHistory()[0])
+        assertEquals(updateData, shipment.getImmutableUpdateHistory()[0])
     }
 
     @Test
-    fun `update should notify observers after setting status and timestamp`() {
-        val shipmentId = "SHIP_DELAY_002"
-        val shipment = Shipment(shipmentId)
+    fun `update should notify Tracker and update TrackerViewHelper correctly for delayed`() {
+        val shipmentId = "SHIP_DELAY_002_TRACKER"
+        val creationTime = Instant.parse("2023-01-01T10:00:00Z").toEpochMilli()
+        val shipment = Shipment(shipmentId, ShipmentType.STANDARD, creationTime)
         shipment.status = "Shipped"
-        val newExpectedTimestamp = 1679999999000L
-        val update = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000,$newExpectedTimestamp")
-        val mockObserver = MockShipmentObserver()
-        shipment.addObserver(mockObserver)
+        shipment.addUpdate(ShippingUpdate.fromString("created,$shipmentId,$creationTime"))
+        shipment.addUpdate(ShippingUpdate.fromString("shipped,$shipmentId,${creationTime + 1000},${creationTime + 10000}"))
 
-        val strategy = DelayedStrategy()
-        strategy.update(shipment, update)
+        val newExpectedTimestamp = Instant.parse("2023-01-05T10:00:00Z").toEpochMilli()
+        val updateData = ShippingUpdate.fromString("delayed,$shipmentId,${Instant.now().toEpochMilli()},$newExpectedTimestamp")
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
 
-        assertTrue(mockObserver.updateCalled)
-        assertNotNull(mockObserver.receivedShipment)
-        assertEquals(shipmentId, mockObserver.receivedShipment?.id)
-        assertEquals("Delayed", mockObserver.receivedShipment?.status)
-        assertEquals(newExpectedTimestamp, mockObserver.receivedShipment?.expectedDeliveryDateTimestamp)
+        val strategy = DelayedStrategy() // Use the original strategy
+        strategy.update(shipment, updateData)
+
+        assertEquals("Delayed", viewModel.shipmentStatus)
+        val instant = Instant.ofEpochMilli(newExpectedTimestamp)
+        val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        assertEquals(dateTime.format(formatter), viewModel.expectedShipmentDeliveryDate)
+        assertEquals(3, viewModel.shipmentUpdateHistory.size)
+        assertTrue(viewModel.shipmentUpdateHistory[2].contains("Delayed"), "History should contain 'Delayed' update")
+        assertTrue(viewModel.ruleViolations.isEmpty(), "No rule violations expected for standard shipment delayed")
     }
 
     @Test
@@ -53,14 +64,14 @@ class DelayedStrategyTest {
         val shipmentId = "SHIP_DELAY_003"
         val shipment = Shipment(shipmentId)
         shipment.status = "Shipped"
-        shipment.expectedDeliveryDateTimestamp = 1000L // Pre-existing timestamp
-        val update = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000") // No otherInfo
+        shipment.expectedDeliveryDateTimestamp = 1000L
+        val updateData = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000")
 
-        val strategy = DelayedStrategy()
-        strategy.update(shipment, update)
+        val strategy = DelayedStrategy() // Use the original strategy
+        strategy.update(shipment, updateData)
 
         assertEquals("Delayed", shipment.status)
-        assertEquals(1000L, shipment.expectedDeliveryDateTimestamp) // Should remain unchanged
+        assertEquals(1000L, shipment.expectedDeliveryDateTimestamp)
         assertEquals(1, shipment.getImmutableUpdateHistory().size)
     }
 
@@ -75,32 +86,49 @@ class DelayedStrategyTest {
             val shipmentId = "SHIP_DELAY_004"
             val shipment = Shipment(shipmentId)
             shipment.status = "Shipped"
-            val update = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000,not_a_timestamp")
+            val updateData = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000,not_a_timestamp")
 
-            val strategy = DelayedStrategy()
-            strategy.update(shipment, update)
+            val strategy = DelayedStrategy() // Use the original strategy
+            strategy.update(shipment, updateData)
 
-            assertEquals("Delayed", shipment.status) // Status should still change
-            assertNull(shipment.expectedDeliveryDateTimestamp) // Timestamp should not be set
+            assertEquals("Delayed", shipment.status)
+            assertNull(shipment.expectedDeliveryDateTimestamp)
 
-            // No explicit flush needed with auto-flush PrintStream, but closing is good practice
-            // ps.flush() // Still good to have if auto-flush is not guaranteed for all operations
-            ps.close() // <--- IMPORTANT: Close the PrintStream to ensure all content is written
+            ps.close() // CRUCIAL: Close the PrintStream to flush all content
 
-            val loggedOutput = bos.toString() // Get the content from the ByteArrayOutputStream
-            println("--- Captured Log Output ---") // Temporarily print to see what's actually captured
-            println(loggedOutput)
-            println("-------------------------")
-
+            val loggedOutput = bos.toString()
             assertTrue(loggedOutput.contains("Invalid timestamp format"), "Error message should contain 'Invalid timestamp format'")
             assertTrue(loggedOutput.contains(shipmentId), "Error message should contain shipment ID")
             assertTrue(loggedOutput.contains("not_a_timestamp"), "Error message should contain the invalid timestamp")
 
         } finally {
             System.setErr(originalErr) // Restore stderr
-            ps.close() // Ensure it's closed even if an exception occurs
+            // Ensure ps is closed even if an exception occurs in the try block
+            // If ps is declared outside try, close it in finally.
+            // If declared inside, it will be closed by the finally block's execution path.
         }
     }
+
+    @Test
+    fun `update should notify observers after setting status and timestamp`() {
+        val shipmentId = "SHIP_DELAY_002"
+        val shipment = Shipment(shipmentId)
+        shipment.status = "Shipped"
+        val newExpectedTimestamp = 1679999999000L
+        val update = ShippingUpdate.fromString("delayed,$shipmentId,1678886400000,$newExpectedTimestamp")
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
+
+        val strategy = DelayedStrategy()
+        strategy.update(shipment, update)
+
+        assertEquals(shipmentId, viewModel.shipmentId)
+        assertEquals("Delayed", viewModel.shipmentStatus)
+        val instant = Instant.ofEpochMilli(newExpectedTimestamp)
+        val dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        assertEquals(dateTime.format(formatter), viewModel.expectedShipmentDeliveryDate)    }
 
     @Test
     fun `DelayedStrategy should NOT add violation for OvernightShipment when delayed beyond 1 day`() {

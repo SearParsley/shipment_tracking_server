@@ -29,17 +29,16 @@ class NoteAddedStrategyTest {
         val shipment = Shipment(shipmentId)
         val noteContent = "Fragile contents, handle with care."
         val updateData = ShippingUpdate.fromString("noteadded,$shipmentId,1678886400000,$noteContent")
-        val mockObserver = MockShipmentObserver()
-        shipment.addObserver(mockObserver)
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
 
         val strategy = NoteAddedStrategy()
         strategy.update(shipment, updateData)
 
-        assertTrue(mockObserver.updateCalled)
-        assertNotNull(mockObserver.receivedShipment)
-        assertEquals(shipmentId, mockObserver.receivedShipment?.id)
-        assertEquals(1, mockObserver.receivedShipment?.getImmutableNotes()?.size)
-        assertEquals(noteContent, mockObserver.receivedShipment?.getImmutableNotes()?.get(0))
+        assertEquals(shipmentId, viewModel.shipmentId)
+        assertEquals(1, viewModel.shipmentNotes.size)
+        assertEquals(noteContent, viewModel.shipmentNotes[0])
     }
 
     @Test

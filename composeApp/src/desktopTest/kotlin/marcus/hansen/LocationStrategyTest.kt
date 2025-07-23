@@ -1,10 +1,10 @@
 package marcus.hansen
 
+import androidx.compose.ui.platform.findComposeDefaultViewModelStoreOwner
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class LocationStrategyTest {
 
@@ -31,16 +31,15 @@ class LocationStrategyTest {
         shipment.status = "In Transit"
         val location = "New York NY"
         val updateData = ShippingUpdate.fromString("location,$shipmentId,1678886400000,$location")
-        val mockObserver = MockShipmentObserver()
-        shipment.addObserver(mockObserver)
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
 
         val strategy = LocationStrategy()
         strategy.update(shipment, updateData)
 
-        assertTrue(mockObserver.updateCalled)
-        assertNotNull(mockObserver.receivedShipment)
-        assertEquals(shipmentId, mockObserver.receivedShipment?.id)
-        assertEquals(location, mockObserver.receivedShipment?.currentLocation)
+        assertEquals(shipmentId, viewModel.shipmentId)
+        assertEquals(location, viewModel.currentLocation)
     }
 
     @Test
