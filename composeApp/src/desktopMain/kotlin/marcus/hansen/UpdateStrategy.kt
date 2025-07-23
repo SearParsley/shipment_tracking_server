@@ -11,9 +11,9 @@ interface UpdateStrategy {
      * After applying the update, the strategy should call shipment.notifyObservers().
      *
      * @param shipment The Shipment object to be updated.
-     * @param update The data containing the details of the update.
+     * @param shippingUpdate The data containing the details of the update.
      */
-    fun update(shipment: Shipment, update: ShippingUpdate)
+    fun update(shipment: Shipment, shippingUpdate: ShippingUpdate)
 
     /**
      * Helper function to perform the actual rule validation logic.

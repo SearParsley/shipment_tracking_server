@@ -1,10 +1,10 @@
 package marcus.hansen
 
 class DeliveredStrategy : UpdateStrategy {
-    override fun update(shipment: Shipment, update: ShippingUpdate) {
+    override fun update(shipment: Shipment, shippingUpdate: ShippingUpdate) {
         shipment.status = "Delivered"
         shipment.expectedDeliveryDateTimestamp = null
-        shipment.addUpdate(update)
+        shipment.addUpdate(shippingUpdate)
         shipment.notifyObservers()
     }
 }

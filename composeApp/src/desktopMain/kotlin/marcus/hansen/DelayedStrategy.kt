@@ -1,22 +1,22 @@
 package marcus.hansen
 
 class DelayedStrategy : UpdateStrategy {
-    override fun update(shipment: Shipment, update: ShippingUpdate) {
+    override fun update(shipment: Shipment, shippingUpdate: ShippingUpdate) {
         shipment.status = "Delayed"
-        if (update.otherInfo.isNotEmpty()) {
+        if (shippingUpdate.otherInfo.isNotEmpty()) {
             try {
-                val newExpectedTimestamp = update.otherInfo[0].toLong()
+                val newExpectedTimestamp = shippingUpdate.otherInfo[0].toLong()
                 try {
                     shipment.expectedDeliveryDateTimestamp = newExpectedTimestamp
-                    performRuleValidation(shipment, newExpectedTimestamp, update.updateType)
+                    performRuleValidation(shipment, newExpectedTimestamp, shippingUpdate.updateType)
                 } catch (e: Exception) {
                     shipment.ruleViolations.clear()
                 }
             } catch (e: NumberFormatException) {
-                System.err.println("DelayedStrategy: Invalid timestamp format in otherInfo for shipment ${shipment.id}: ${update.otherInfo[0]}")
+                System.err.println("DelayedStrategy: Invalid timestamp format in otherInfo for shipment ${shipment.id}: ${shippingUpdate.otherInfo[0]}")
             }
         }
-        shipment.addUpdate(update)
+        shipment.addUpdate(shippingUpdate)
         shipment.notifyObservers()
     }
 }

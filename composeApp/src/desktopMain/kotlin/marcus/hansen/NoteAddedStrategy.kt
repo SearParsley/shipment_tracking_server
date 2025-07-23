@@ -1,11 +1,11 @@
 package marcus.hansen
 
 class NoteAddedStrategy : UpdateStrategy {
-    override fun update(shipment: Shipment, update: ShippingUpdate) {
-        if (update.otherInfo.isNotEmpty()) {
-            shipment.addNote(update.otherInfo[0])
+    override fun update(shipment: Shipment, shippingUpdate: ShippingUpdate) {
+        if (shippingUpdate.otherInfo.isNotEmpty()) {
+            shipment.addNote(shippingUpdate.otherInfo[0])
         }
-        shipment.addUpdate(update)
+        shipment.addUpdate(shippingUpdate)
         shipment.notifyObservers()
     }
 }
