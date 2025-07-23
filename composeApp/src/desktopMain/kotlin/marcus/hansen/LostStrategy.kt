@@ -1,9 +1,9 @@
 package marcus.hansen
 
 class LostStrategy : UpdateStrategy {
-    override fun update(shipment: Shipment, update: ShippingUpdate) {
+    override fun update(shipment: Shipment, shippingUpdate: ShippingUpdate) {
         shipment.status = "Lost"
-        shipment.addUpdate(update)
+        shipment.addUpdate(shippingUpdate)
         shipment.notifyObservers()
     }
 }

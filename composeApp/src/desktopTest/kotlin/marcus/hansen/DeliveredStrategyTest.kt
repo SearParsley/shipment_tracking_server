@@ -28,15 +28,14 @@ class DeliveredStrategyTest {
         val shipment = Shipment(shipmentId)
         shipment.status = "Out for Delivery"
         val updateData = ShippingUpdate.fromString("delivered,$shipmentId,1678886400000")
-        val mockObserver = MockShipmentObserver()
-        shipment.addObserver(mockObserver)
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
 
         val strategy = DeliveredStrategy()
         strategy.update(shipment, updateData)
 
-        assertTrue(mockObserver.updateCalled)
-        assertNotNull(mockObserver.receivedShipment)
-        assertEquals(shipmentId, mockObserver.receivedShipment?.id)
-        assertEquals("Delivered", mockObserver.receivedShipment?.status)
+        assertEquals(shipmentId, viewModel.shipmentId)
+        assertEquals("Delivered", viewModel.shipmentStatus)
     }
 }

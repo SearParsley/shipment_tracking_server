@@ -28,15 +28,14 @@ class LostStrategyTest {
         val shipment = Shipment(shipmentId)
         shipment.status = "Delayed"
         val updateData = ShippingUpdate.fromString("lost,$shipmentId,1678886400000")
-        val mockObserver = MockShipmentObserver()
-        shipment.addObserver(mockObserver)
+        val viewModel = TrackerViewHelper(shipmentId)
+        val tracker = Tracker(shipmentId, viewModel)
+        shipment.addObserver(tracker)
 
         val strategy = LostStrategy()
         strategy.update(shipment, updateData)
 
-        assertTrue(mockObserver.updateCalled)
-        assertNotNull(mockObserver.receivedShipment)
-        assertEquals(shipmentId, mockObserver.receivedShipment?.id)
-        assertEquals("Lost", mockObserver.receivedShipment?.status)
+        assertEquals(shipmentId, viewModel.shipmentId)
+        assertEquals("Lost", viewModel.shipmentStatus)
     }
 }

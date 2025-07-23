@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 class Tracker(
     private val trackedShipmentId: String,
     private val trackerViewModel: TrackerViewHelper
-) : ShipmentObserver {
+) : Observer {
 
     /**
      * Called by the observed Shipment when its state changes.
