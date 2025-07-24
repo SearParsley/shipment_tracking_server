@@ -25,18 +25,18 @@ fun ClientUI() {
     val httpClient = remember { HttpClient(CIO) }
 
     val sendUpdateToServer: (String) -> Unit = { updateString ->
-        serverResponse = null // Clear previous response
+        serverResponse = null
         coroutineScope.launch {
             try {
                 val response: HttpResponse = httpClient.post("http://127.0.0.1:8080/update-shipment") {
-                    setBody(updateString) // Body is the raw string
-                    contentType(ContentType.Text.Plain) // Explicitly set content type
+                    setBody(updateString)
+                    contentType(ContentType.Text.Plain)
                 }
                 serverResponse = "Server Response (${response.status.value}): ${response.bodyAsText()}"
-                updateInput = "" // Clear input field
+                updateInput = ""
             } catch (e: Exception) {
                 serverResponse = "Network Error: ${e.message}. Is the server running at http://127.0.0.1:8080?"
-                System.err.println("Client Error: ${e.message}") // Log client-side network errors
+                System.err.println("Client Error: ${e.message}")
             }
         }
     }

@@ -83,7 +83,7 @@ fun ServerUI() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField( // Material Design text field
+                OutlinedTextField(
                     value = shipmentIdInput,
                     onValueChange = { shipmentIdInput = it },
                     label = { Text("Shipment ID") },
