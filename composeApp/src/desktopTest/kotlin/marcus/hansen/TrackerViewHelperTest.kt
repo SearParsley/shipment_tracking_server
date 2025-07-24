@@ -81,6 +81,16 @@ class TrackerViewHelperTest {
     }
 
     @Test
+    fun `shipmentType should be settable internally and correctly store array`() {
+        val viewModel = TrackerViewHelper("VIEW_HELPER_006")
+        val type = ShipmentType.STANDARD
+        val typeString = "Standard"
+        viewModel.shipmentType = typeString // Using internal set
+
+        assertEquals(typeString, viewModel.shipmentType)
+    }
+
+    @Test
     fun `reset method should restore default values`() {
         val viewModel = TrackerViewHelper("VIEW_HELPER_007")
         viewModel.shipmentStatus = "Some Status"
@@ -96,5 +106,7 @@ class TrackerViewHelperTest {
         assertNull(viewModel.expectedShipmentDeliveryDate)
         assertTrue(viewModel.shipmentNotes.isEmpty())
         assertTrue(viewModel.shipmentUpdateHistory.isEmpty())
+        assertEquals("Standard", viewModel.shipmentType)
+        assertTrue(viewModel.ruleViolations.isEmpty())
     }
 }
