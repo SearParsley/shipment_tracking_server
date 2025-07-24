@@ -63,4 +63,8 @@ fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "Shipment Tracking Server & Client") {
         ServerUI()
     }
+
+    Window(onCloseRequest = ::exitApplication, title = "Shipment Update Client") {
+        ClientUI()
+    }
 }
