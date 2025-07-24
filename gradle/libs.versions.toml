@@ -2,18 +2,16 @@
 [versions]
 composeHotReload = "1.0.0-alpha11"
 composeMultiplatform = "1.8.2"
-junit-jupiter = "5.10.0" # Changed from "junit = "4.13.2" previously discussed
+junit-jupiter = "5.10.0"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
 mockk = "1.13.10"
+ktor = "2.3.11"
 
 # Define common libraries
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
-# REMOVED: kotlin-testJunit and old JUnit 4 if they were still present in your actual file
-# kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
-# junit = { module = "junit:junit", version.ref = "junit" }
 
 junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit-jupiter" }
 junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter" }
@@ -32,6 +30,12 @@ compose-components-resources = { module = "org.jetbrains.compose.components:comp
 compose-components-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 compose-desktop-currentOs = { module = "org.jetbrains.compose.desktop:desktop", version.ref = "composeMultiplatform" }
 
+# Ktor Server Libraries
+ ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
+ ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
+ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
+ ktor-server-host-common = { module = "io.ktor:ktor-server-host-common", version.ref = "ktor" }
 
 # Define plugins
 [plugins]

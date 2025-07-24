@@ -29,6 +29,11 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.ktor.server.netty)
+            implementation(libs.ktor.server.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.host.common)
         }
         desktopTest.dependencies {
             runtimeOnly(libs.junit.jupiter.engine)
