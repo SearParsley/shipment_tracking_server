@@ -144,7 +144,7 @@ fun ShipmentCard(viewModel: TrackerViewHelper, onStopTracking: (String) -> Unit)
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Shipment ID: ${viewModel.shipmentId}", style = MaterialTheme.typography.titleMedium)
+                Text("Shipment ID: ${viewModel.shipmentId} (${viewModel.shipmentType})", style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = { onStopTracking(viewModel.shipmentId) }) {
                     Text("X", color = MaterialTheme.colorScheme.error)
                 }

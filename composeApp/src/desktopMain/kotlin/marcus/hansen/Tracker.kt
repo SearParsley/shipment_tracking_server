@@ -34,6 +34,7 @@ class Tracker(
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
             "${update.updateType.capitalize()} on $formattedTimestamp (ID: ${update.shipmentId})"
         }.toTypedArray()
+        trackerViewModel.shipmentType = shipment.type.toString().lowercase().capitalize()
         trackerViewModel.ruleViolations = shipment.ruleViolations.toTypedArray()
     }
 }
