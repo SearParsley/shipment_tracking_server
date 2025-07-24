@@ -14,8 +14,8 @@ class ShipmentTest {
 
         assertEquals(shipmentId, shipment.id)
         assertEquals("Unknown", shipment.status)
-        assertTrue(shipment.notes.isEmpty())
-        assertTrue(shipment.updateHistory.isEmpty())
+        assertTrue(shipment.getImmutableNotes().isEmpty())
+        assertTrue(shipment.getImmutableUpdateHistory().isEmpty())
         assertNull(shipment.expectedDeliveryDateTimestamp)
         assertNull(shipment.currentLocation)
     }
@@ -27,12 +27,12 @@ class ShipmentTest {
         val note2 = "Customer requested special handling."
 
         shipment.addNote(note1)
-        assertEquals(1, shipment.notes.size)
-        assertEquals(note1, shipment.notes[0])
+        assertEquals(1, shipment.getImmutableNotes().size)
+        assertEquals(note1, shipment.getImmutableNotes()[0])
 
         shipment.addNote(note2)
-        assertEquals(2, shipment.notes.size)
-        assertEquals(note2, shipment.notes[1])
+        assertEquals(2, shipment.getImmutableNotes().size)
+        assertEquals(note2, shipment.getImmutableNotes()[1])
         assertTrue(shipment.getImmutableNotes().containsAll(listOf(note1, note2)))
     }
 
@@ -43,12 +43,12 @@ class ShipmentTest {
         val update2 = ShippingUpdate.fromString("shipped,SHIP002,2000,3000")
 
         shipment.addUpdate(update1)
-        assertEquals(1, shipment.updateHistory.size)
-        assertEquals(update1, shipment.updateHistory[0])
+        assertEquals(1, shipment.getImmutableUpdateHistory().size)
+        assertEquals(update1, shipment.getImmutableUpdateHistory()[0])
 
         shipment.addUpdate(update2)
-        assertEquals(2, shipment.updateHistory.size)
-        assertEquals(update2, shipment.updateHistory[1])
+        assertEquals(2, shipment.getImmutableUpdateHistory().size)
+        assertEquals(update2, shipment.getImmutableUpdateHistory()[1])
         assertTrue(shipment.getImmutableUpdateHistory().containsAll(listOf(update1, update2)))
     }
 
@@ -146,7 +146,7 @@ class ShipmentTest {
         shipment.addNote("Test Note")
         val notesCopy = shipment.getImmutableNotes()
 
-        assertEquals(1, shipment.notes.size) // Internal list size should remain 1
+        assertEquals(1, shipment.getImmutableNotes().size) // Internal list size should remain 1
         assertEquals(1, notesCopy.size) // Returned copy size should also be 1 initially
 
         // Attempting to modify notesCopy should result in a compilation error or runtime error
@@ -161,7 +161,7 @@ class ShipmentTest {
         shipment.addUpdate(update)
         val historyCopy = shipment.getImmutableUpdateHistory()
 
-        assertEquals(1, shipment.updateHistory.size)
+        assertEquals(1, shipment.getImmutableUpdateHistory().size)
         assertEquals(1, historyCopy.size)
     }
 }

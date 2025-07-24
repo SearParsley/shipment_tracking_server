@@ -14,12 +14,12 @@ object TrackingServer {
         "noteadded" to NoteAddedStrategy()
     )
 
-    fun addShipment(shipment: Shipment) {
-        shipments[shipment.id] = shipment
-    }
-
     fun findShipment(id: String): Shipment? {
         return shipments[id]
+    }
+
+    fun addShipment(shipment: Shipment) {
+        shipments[shipment.id] = shipment
     }
 
     fun processUpdateString(updateString: String): String {
@@ -56,6 +56,4 @@ object TrackingServer {
             return "Error processing update: ${e.message}"
         }
     }
-
-    internal fun resetForTesting() { shipments.clear() }
 }

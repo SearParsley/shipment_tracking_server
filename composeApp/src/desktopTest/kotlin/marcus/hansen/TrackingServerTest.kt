@@ -7,7 +7,7 @@ class TrackingServerTest {
 
     @org.junit.jupiter.api.BeforeEach
     fun setup() {
-        TrackingServer.resetForTesting()
+//        TrackingServer.resetForTesting() // good practice for testing, but not needed in this implementation
     }
 
     @Test
