@@ -22,6 +22,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kotlinx.coroutinesCore)
+            implementation(libs.logback.classic)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

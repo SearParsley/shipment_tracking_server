@@ -1,0 +1,24 @@
+<!-- logback.xml -->
+<configuration>
+    <!-- Console Appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Pattern for log output: timestamp [thread] LEVEL loggerName - message -->
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root Logger Configuration -->
+    <root level="INFO"> <!-- Set default logging level to INFO -->
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <!-- Specific Logger for Ktor/Netty to suppress DEBUG messages -->
+    <logger name="io.ktor" level="INFO" />
+    <logger name="io.netty" level="INFO" />
+    <logger name="org.apache.http" level="INFO" /> <!-- If you add HTTP client later -->
+    <logger name="ch.qos.logback" level="INFO" /> <!-- Logback's own internal logs -->
+
+    <!-- You can set specific loggers to DEBUG if you need more detail for certain parts -->
+    <!-- <logger name="marcus.hansen" level="DEBUG" /> -->
+</configuration>
