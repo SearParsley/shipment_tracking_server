@@ -2,10 +2,8 @@ package marcus.hansen
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import java.io.File // For initial_updates.txt loading
 
@@ -63,6 +61,6 @@ fun main() = application {
     }
 
     Window(onCloseRequest = ::exitApplication, title = "Shipment Tracking Server & Client") {
-        UserInterface()
+        ServerUI()
     }
 }

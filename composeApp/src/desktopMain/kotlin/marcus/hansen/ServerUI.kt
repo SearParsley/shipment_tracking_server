@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserInterface() {
+fun ServerUI() {
     var shipmentIdInput by remember { mutableStateOf("") }
     val trackedShipments = remember { mutableStateListOf<TrackerViewHelper>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
