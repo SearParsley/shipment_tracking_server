@@ -4,9 +4,10 @@ composeHotReload = "1.0.0-alpha11"
 composeMultiplatform = "1.8.2"
 junit-jupiter = "5.10.0"
 kotlin = "2.2.0"
-kotlinx-coroutines = "1.10.2"
+kotlinx-coroutines = "1.7.3"
 mockk = "1.13.10"
 ktor = "2.3.11"
+logback-classic = "1.4.14"
 
 # Define common libraries
 [libraries]
@@ -36,6 +37,9 @@ compose-desktop-currentOs = { module = "org.jetbrains.compose.desktop:desktop", 
  ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
  ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
  ktor-server-host-common = { module = "io.ktor:ktor-server-host-common", version.ref = "ktor" }
+
+# Server logging
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic"}
 
 # Define plugins
 [plugins]
