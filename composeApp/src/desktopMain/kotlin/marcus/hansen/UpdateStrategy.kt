@@ -3,7 +3,9 @@ package marcus.hansen
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 interface UpdateStrategy {
     /**
@@ -40,20 +42,24 @@ interface UpdateStrategy {
         val daysDifference = Duration.between(creationDate.atStartOfDay(ZoneId.systemDefault()).toInstant(),
             expectedDeliveryDate.atStartOfDay(ZoneId.systemDefault()).toInstant()).toDays()
 
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val creationDatetime = LocalDateTime.ofInstant(creationInstant, ZoneId.systemDefault()).format(formatter).toString()
+        val expectedDeliveryDatetime = LocalDateTime.ofInstant(expectedDeliveryInstant, ZoneId.systemDefault()).format(formatter).toString()
+
         when (shipment.type) {
             ShipmentType.EXPRESS -> {
                 if (daysDifference > 3) {
-                    shipment.ruleViolations.add("Express shipment delivery date (${expectedDeliveryInstant}) is more than 3 days after creation (${creationInstant}).")
+                    shipment.ruleViolations.add("Express shipment delivery date (${expectedDeliveryDatetime}) is more than 3 days after creation (${creationDatetime}).")
                 }
             }
             ShipmentType.OVERNIGHT -> {
                 if (updateType != "delayed" && daysDifference != 1L) {
-                    shipment.ruleViolations.add("Overnight shipment delivery date (${expectedDeliveryInstant}) is not exactly 1 day after creation (${creationInstant}).")
+                    shipment.ruleViolations.add("Overnight shipment delivery date (${expectedDeliveryDatetime}) is not exactly 1 day after creation (${creationDatetime}).")
                 }
             }
             ShipmentType.BULK -> {
                 if (daysDifference < 3) {
-                    shipment.ruleViolations.add("Bulk shipment delivery date (${expectedDeliveryInstant}) is sooner than 3 days after creation (${creationInstant}).")
+                    shipment.ruleViolations.add("Bulk shipment delivery date (${expectedDeliveryDatetime}) is sooner than 3 days after creation (${creationDatetime}).")
                 }
             }
             ShipmentType.STANDARD -> {

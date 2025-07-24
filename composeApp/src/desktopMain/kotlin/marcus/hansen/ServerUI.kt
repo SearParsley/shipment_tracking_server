@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserInterface() {
+fun ServerUI() {
     var shipmentIdInput by remember { mutableStateOf("") }
     val trackedShipments = remember { mutableStateListOf<TrackerViewHelper>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -68,7 +68,7 @@ fun UserInterface() {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Shipment Tracking Simulator") })
+            TopAppBar(title = { Text("Shipment Tracking Server") })
         }
     ) { paddingValues ->
         Column(
@@ -83,7 +83,7 @@ fun UserInterface() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedTextField( // Material Design text field
+                OutlinedTextField(
                     value = shipmentIdInput,
                     onValueChange = { shipmentIdInput = it },
                     label = { Text("Shipment ID") },
@@ -144,7 +144,7 @@ fun ShipmentCard(viewModel: TrackerViewHelper, onStopTracking: (String) -> Unit)
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Shipment ID: ${viewModel.shipmentId}", style = MaterialTheme.typography.titleMedium)
+                Text("Shipment ID: ${viewModel.shipmentId} (${viewModel.shipmentType})", style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = { onStopTracking(viewModel.shipmentId) }) {
                     Text("X", color = MaterialTheme.colorScheme.error)
                 }
