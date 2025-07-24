@@ -68,7 +68,7 @@ fun ServerUI() {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Shipment Tracking Simulator") })
+            TopAppBar(title = { Text("Shipment Tracking Server") })
         }
     ) { paddingValues ->
         Column(
