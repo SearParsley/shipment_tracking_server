@@ -60,7 +60,7 @@ fun main() = application {
         }
     }
 
-    Window(onCloseRequest = ::exitApplication, title = "Shipment Tracking Server & Client") {
+    Window(onCloseRequest = ::exitApplication, title = "Shipment Tracking Server") {
         ServerUI()
     }
 
