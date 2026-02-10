@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Small Kotlin Compose-based simulator showcasing shipment lifecycle modeling using object-oriented design principles such as Factory, Observer, Strategy, and State patterns to create a modular and extensible shipment tracking system.
+This is a small Kotlin Compose-based client-server application that showcases shipment lifecycle modeling using object-oriented design principles such as the Factory, Observer, Strategy, and State patterns to create a modular and extensible shipment tracking system.
 
 ## Features
 
@@ -31,26 +31,27 @@ gradle run
 Shipment update format:
 
 ```text
-`updateType,shipmentId,timestampOfUpdate,otherInfo (optional)`
+updateType,shipmentId,timestampOfUpdate,otherInfo (optional)
 ```
 
 - `UpdateType`: {`created`, `delivered`, `delayed`, `lost`, `cancelled`, `location`, `shipped`, `noteAdded`}
 - `shipmentId`: unique string
-- `timestampOfUpdate`: Unix epoch time
+- `timestampOfUpdate`: Unix epoch (ms since 01/01/1970)
 - `otherInfo`:
-    - `delayed`: timestamp of expected delivery (Unix epoch time)
+    - `delayed`: timestamp of expected delivery (Unix epoch)
     - `location`: current shipment location
     - `noteAdded`: note text
 
 Once the app is running:
 
-1. Locate both the client and server GUI windows
-2. Enter a shipment update in client window text field
+1. Locate both the client and server GUI windows (one may be on top of the other)
+2. Enter a properly formatted (see above) shipment update in client window text field
     - Click button to send update to server
 3. Enter shipment ID in server window text field
     - Click left button to track shipment
     - Click right button to stop tracking shipment
 4. Repeat steps 2 and 3 as desired
+    - Send additional shipment updates to server via client window
     - View update history of tracked shipments in server window
 
 ## Architecture
