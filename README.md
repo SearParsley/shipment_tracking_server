@@ -69,7 +69,7 @@ updateType,shipmentId,timestampOfUpdate,otherInfo (optional)
   - `location`: current shipment location
   - `noteAdded`: note text
 
-### Example input
+### Example Inputs
 
 ```text
 created,SHP100,1675852800000
